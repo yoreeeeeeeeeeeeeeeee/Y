@@ -1,433 +1,356 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Pink Tulip Bouquet</title>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Quicksand:wght@500;600&display=swap" rel="stylesheet">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>petals</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Cormorant+Garamond:ital,wght@1,500&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#f6d9d9}
-  canvas{display:block;width:100%;height:100%}
-
-  /* ===== Envelope + letters ===== */
-  :root{--paper:#fffaf0;--line:rgba(232,112,156,.22)}
-  #envWrap{position:fixed;right:max(3vw,12px);bottom:max(3vh,14px);z-index:10;--w:clamp(150px,20vw,210px);width:var(--w);height:calc(var(--w)*.68);perspective:900px;cursor:pointer;transform:rotate(-4deg);font-family:'Quicksand',sans-serif}
-  #envWrap>*{position:absolute}
-  .env-back{inset:0;background:linear-gradient(#f39bb9,#ee88ab);border-radius:6px;box-shadow:0 10px 22px rgba(150,50,90,.35)}
-  .env-front{inset:0;z-index:3;background:linear-gradient(160deg,#fbc4d6,#f6a3c0);clip-path:polygon(0 0,50% 58%,100% 0,100% 100%,0 100%);border-radius:6px}
-  .env-front::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 2px,transparent 2px 5px)}
-  .env-flap{left:0;top:0;width:100%;height:62%;z-index:4;background:linear-gradient(#f9b3cb,#f28fb2);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .7s cubic-bezier(.4,.1,.2,1)}
-  .open .env-flap{transform:rotateX(180deg);z-index:1;background:#ec7fa6}
-  .seal{left:50%;top:50%;z-index:5;width:calc(var(--w)*.17);height:calc(var(--w)*.17);margin:calc(var(--w)*-.06) 0 0 calc(var(--w)*-.085);border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7aa8,#c93a6b);color:#ffe3ee;display:grid;place-items:center;font-size:calc(var(--w)*.09);box-shadow:0 2px 5px rgba(120,20,60,.5);transition:opacity .3s}
-  .open .seal{opacity:0}
-  .letter{left:11%;bottom:6%;width:78%;height:calc(var(--w)*.9);z-index:2;border:0;background:var(--paper) repeating-linear-gradient(transparent 0 15px,var(--line) 15px 16px);border-radius:4px;box-shadow:0 3px 8px rgba(120,50,80,.25);color:#6b3a4d;text-align:center;padding:calc(var(--w)*.05);box-sizing:border-box;font-family:'Caveat',cursive;font-size:calc(var(--w)*.085);line-height:1.1;transition:transform .7s cubic-bezier(.3,1.2,.4,1);transition-delay:calc(var(--i)*.12s);pointer-events:none;cursor:pointer}
-  .letter span{display:block;font-size:1.5em;margin-bottom:2px}
-  .open .letter{pointer-events:auto;transform:translate(var(--x),calc(var(--w)*-.5)) rotate(var(--r))}
-  #hint{position:fixed;right:max(3vw,12px);z-index:10;bottom:calc(max(3vh,14px) + clamp(150px,20vw,210px)*.68 + 14px);font-family:'Caveat',cursive;font-size:1.5rem;color:#c2497a;animation:bob 1.6s ease-in-out infinite;pointer-events:none;background:rgba(255,255,255,.6);padding:0 12px;border-radius:14px}
-  body.opened #hint{display:none}
-  @keyframes bob{50%{transform:translateY(-8px)}}
-  #closeEnv{position:fixed;right:max(3vw,12px);z-index:11;display:none;border:0;background:#fff;color:#c2497a;font:600 .9rem 'Quicksand',sans-serif;padding:6px 14px;border-radius:20px;box-shadow:0 2px 8px rgba(150,50,90,.25);cursor:pointer;bottom:calc(max(3vh,14px) + clamp(150px,20vw,210px)*1.32)}
-  body.opened #closeEnv{display:block}
-  #reader{position:fixed;inset:0;z-index:100;background:rgba(70,20,40,.55);display:none;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
-  #reader.on{display:flex}
-  .card{width:min(680px,100%);max-height:84vh;overflow-y:auto;background:var(--paper);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.4);position:relative;padding:28px clamp(18px,5vw,48px) 0;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:#f08db3 #ffe9f1;color:#5a2f40}
-  .card::-webkit-scrollbar{width:8px}.card::-webkit-scrollbar-thumb{background:#f08db3;border-radius:8px}
-  .card h2{font-family:'Caveat',cursive;font-size:clamp(1.9rem,6vw,2.6rem);margin:0 0 10px;color:#c2497a;text-align:center}
-  .txt{font-family:'Caveat',cursive;font-size:clamp(1.3rem,4.2vw,1.65rem);line-height:1.7;background:repeating-linear-gradient(transparent 0 calc(1.7em - 1px),var(--line) calc(1.7em - 1px) 1.7em)}
-  .txt p{margin:0 0 1.7em;opacity:0;animation:fade .8s forwards}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .sign{text-align:right;font-weight:700}
-  .nav{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:10px 0;background:linear-gradient(transparent,var(--paper) 35%);font-family:'Quicksand',sans-serif}
-  .nav button,#x{border:0;background:#f7b7cf;color:#7a2a4f;font:600 1rem 'Quicksand',sans-serif;border-radius:20px;padding:8px 16px;cursor:pointer}
-  #x{position:absolute;right:10px;top:10px;padding:4px 11px;z-index:2}
-  @media (prefers-reduced-motion:reduce){#hint{animation:none}.txt p{animation:none;opacity:1}.env-flap,.letter{transition:none}}
-</style>
-</head>
-<body>
-<canvas id="c"></canvas>
-<div id="hint">Click me 💌</div>
-<button id="closeEnv">Close ✕</button>
-<div id="envWrap" role="button" aria-label="Open envelope">
-  <div class="env-back"></div><div class="env-flap"></div><div id="letters"></div><div class="env-front"></div><div class="seal">♥</div>
-</div>
-<div id="reader"><div class="card" id="card"></div></div>
+:root{--ink1:#1b2340;--ink2:#4a2a6a;--paper:#f6efdc;--pink:#e86a9a;--gold:#e8b86a;--serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;--hw:'Caveat','Segoe Script','Bradley Hand',cursive}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#1a0a1e;font-family:var(--serif)}
+.bg{position:fixed;inset:0}
+#bg1{background:radial-gradient(ellipse at 50% 40%,#6b2a54,#3a1740 45%,#1d0c24)}
+#bg2{background:radial-gradient(ellipse at 50% 45%,#ffd2c0,#f29aa6 45%,#a8527a);opacity:0;transition:opacity 9s ease}
+#glow{position:fixed;left:50%;top:42%;width:min(90vw,520px);aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,150,190,.35),transparent 65%);pointer-events:none;animation:gl 6s ease-in-out infinite}
+@keyframes gl{50%{opacity:.6;transform:translate(-50%,-50%) scale(1.08)}}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(10,2,14,.55))}
+canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:manipulation}
+#msg,#hint{position:fixed;left:50%;transform:translateX(-50%);width:min(86vw,560px);text-align:center;color:#ffe3ee;font:italic 500 clamp(21px,5.2vw,30px)/1.4 var(--serif);text-shadow:0 2px 14px rgba(0,0,0,.6);opacity:0;transition:opacity .35s;pointer-events:none}
+#msg{top:11%}#msg.on{opacity:1}
+#hint{bottom:9%;font-size:20px;transition:opacity 2s}#hint.on{opacity:.8}
+/* Full letter */
+.ov{position:fixed;inset:0;overflow-y:auto;scroll-behavior:smooth;background:rgba(10,3,14,.72);opacity:0;transition:opacity 1.2s;-webkit-overflow-scrolling:touch;perspective:1200px}
+.ov.show{opacity:1}.ov.out{opacity:0;transition:opacity .9s}.ov.out .sheet{transform:rotateX(35deg) scale(.9) translateY(30px)}
+.sheet{position:relative;width:100%;min-height:100dvh;padding:72px 30px 80px;margin:0 auto;font:500 26px/36px var(--hw);color:var(--ink1);transition:transform .9s ease;
+background:repeating-linear-gradient(transparent 0 35px,rgba(90,110,160,.3) 35px 36px),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8 .15' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .25 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"),linear-gradient(#f8f1de,#efe5c9);
+box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 50px rgba(130,95,40,.28),inset 0 0 8px rgba(100,70,30,.35)}
+.sheet:after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;transform:translateY(-50%);pointer-events:none;background:linear-gradient(transparent,rgba(90,60,20,.13) 45%,rgba(255,255,255,.35) 52%,transparent)}
+.sheet:before{content:"";position:absolute;right:0;bottom:0;width:34px;height:34px;background:linear-gradient(315deg,rgba(0,0,0,.28),rgba(0,0,0,.05) 50%,#2a1a14 51%);filter:blur(.5px)}
+@media(min-width:700px){.sheet{width:min(600px,92vw);margin:5vh auto;min-height:150dvh;border-radius:3px 6px 4px 5px;padding:72px 54px 90px}}
+.sheet.lav{font:500 24px/36px 'Dancing Script','Segoe Script',cursive;color:var(--ink2);background:repeating-linear-gradient(transparent 0 35px,rgba(130,100,190,.22) 35px 36px),linear-gradient(#f6eefa,#f1e8ea) }
+.sheet.lav i{position:absolute;right:26px;top:20px;font-size:44px;opacity:.13;font-style:normal;filter:grayscale(1)}
+.p{margin-bottom:36px;clip-path:inset(0 100% 0 0);opacity:.2;transition:clip-path 1.6s linear,opacity 1.2s}
+.p.on{clip-path:inset(-4px -4px -4px -4px);opacity:1}
+.l{display:block}
+.hw{display:block;margin:20px auto 0;min-height:48px;padding:6px 26px;font:inherit;font-size:28px;color:inherit;background:none;border:2px solid currentColor;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;cursor:pointer}
+.hw:active{transform:scale(.95)}
+/* Envelope */
+#env{position:fixed;right:5%;bottom:3%;width:min(46vw,230px);aspect-ratio:3/2;transform:rotate(7deg);perspective:700px;opacity:0;transition:opacity 2s;cursor:pointer;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4))}
+#env.on{opacity:1}#env>*{position:absolute;inset:0}
+#env .bk{background:linear-gradient(#6f4ea0,#5b3c8a);border-radius:4px}
+#env .pp{inset:8% 7% 10%;background:#f6efdc;transition:transform 1s ease}
+#env.open .pp{transform:translateY(-75%)}
+#env .fr{background:linear-gradient(135deg,#8467b4,#6a4a9c);clip-path:polygon(0 0,50% 55%,100% 0,100% 100%,0 100%);border-radius:4px}
+#env .fl{height:58%;bottom:auto;background:linear-gradient(#9477c4,#7e5eae);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .9s;z-index:3;backface-visibility:visible}
+#env.open .fl{transform:rotateX(180deg);z-index:0}
+#env .sl{inset:auto;left:50%;top:44%;width:19%;aspect-ratio:1;margin:-9.5% 0 0 -9.5%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a05cc8,#4a1f6e);box-shadow:0 2px 5px rgba(0,0,0,.5);z-index:5;display:grid;place-items:center;font-size:clamp(11px,3vw,17px);transition:all .5s}
+#env.crack .sl{transform:scale(1.3) rotate(14deg);opacity:0}
+#eh{position:fixed;right:5%;bottom:calc(3% + min(31vw,155px) + 22px);width:min(46vw,230px);text-align:center;color:#fff;text-shadow:0 2px 8px rgba(60,10,40,.9);font:italic 22px var(--serif);opacity:0;transition:opacity 2s}#eh.on{opacity:.9}
+/* Scene 4 */
+#dim{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(60,20,30,.45),rgba(20,5,12,.85));opacity:0;transition:opacity 1.2s}
+#dim.on{opacity:1}#dim.off{opacity:0;transition:opacity .8s}
+.card{width:fit-content;min-width:min(310px,90vw);max-width:94vw;max-height:94dvh;overflow:hidden;padding:30px 20px 26px;text-align:center;transform:rotate(-2deg);color:var(--ink2);font-family:var(--hw);
+background:repeating-linear-gradient(transparent 0 31px,rgba(130,100,190,.2) 31px 32px),linear-gradient(#fbf4e2,#f1e6cc);box-shadow:0 18px 40px rgba(0,0,0,.55),inset 0 0 30px rgba(140,100,50,.2);border-radius:3px 7px 4px 6px}
+.tara{font-size:clamp(38px,11vw,54px);line-height:1.1}
+#pn{min-height:64px;margin:12px auto;padding:8px 14px;font-size:clamp(24px,7vw,32px);line-height:1.2;color:#5a2d1f;max-width:300px}
+#pn.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1);background:#ffe98a;box-shadow:2px 4px 10px rgba(0,0,0,.3);transform:rotate(2deg)}
+@keyframes pop{from{transform:scale(.3) rotate(-10deg);opacity:0}}
+.bt{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;min-height:56px}
+.bt button{font:600 22px var(--hw);border:0;border-radius:14px;cursor:pointer;transition:transform .1s,box-shadow .1s}
+#G{width:min(calc(100px*var(--gs,1)),86vw);height:min(calc(54px*var(--gs,1)),42vh);font-size:clamp(24px,calc(24px*var(--gs,1)),22vw);color:#5a2a10;background:linear-gradient(#ffd98a,#f2a0b5);box-shadow:0 5px 0 #c8708a,0 8px 14px rgba(0,0,0,.35)}
+#G.hot{animation:pls 1.4s ease-in-out infinite;box-shadow:0 5px 0 #c8708a,0 0 calc(10px*var(--gs,1)) rgba(255,190,120,.8)}
+@keyframes pls{50%{filter:brightness(1.12)}}
+#G:active{transform:translateY(4px);box-shadow:0 1px 0 #c8708a}
+#P{width:calc(100px*var(--ps,1));height:calc(54px*var(--ps,1));font-size:calc(22px*var(--ps,1));padding:0;color:#555;background:linear-gradient(#cfcfd4,#a9a9b2);box-shadow:0 4px 0 #85858e;opacity:calc(.35 + .65*var(--ps,1))}
+#P.wob{animation:wob .4s}
+@keyframes wob{25%{transform:rotate(-12deg)}50%{transform:rotate(10deg)}75%{transform:rotate(-6deg)}}
+.pt{position:fixed;top:-6vh;width:12px;height:18px;border-radius:70% 0 70% 0;background:linear-gradient(135deg,#ffb3cf,#e5628f);animation:fall var(--d) linear forwards;pointer-events:none}
+.pt.s{width:6px;height:6px;border-radius:50%;background:#ffe8a8;box-shadow:0 0 8px #ffd27a}
+@keyframes fall{to{transform:translate3d(var(--dx),112vh,0) rotate(var(--r))}}
+#end{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;opacity:0;transition:opacity 1.5s;color:#fff;font:500 clamp(40px,12vw,76px)/1.15 var(--hw);padding:24px;background:radial-gradient(ellipse at center,rgba(70,15,45,.78),rgba(70,15,45,.35) 60%,transparent 85%);text-shadow:0 2px 6px rgba(60,10,40,.9),0 0 24px rgba(255,120,160,.9)}
+#end.on{opacity:1}#end .t{animation:gp 3s ease-in-out infinite}
+@keyframes gp{50%{text-shadow:0 0 40px rgba(255,170,200,1);transform:scale(1.04)}}
+#end button{font:500 26px var(--hw);min-height:46px;padding:4px 24px;color:#fff;background:rgba(255,255,255,.12);border:2px solid #fff;border-radius:30px;cursor:pointer;opacity:0;transition:opacity 1s}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style></head><body>
+<div class="bg" id="bg1"></div><div class="bg" id="bg2"></div><div id="glow"></div>
+<canvas id="cv"></canvas><div id="vig"></div><div id="msg"></div><div id="hint">tap a petal</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-(() => {
-'use strict';
-const cv = document.getElementById('c'), ctx = cv.getContext('2d');
-let W, H, DPR, S, OX, OY, bgL, wrapBack, wrapFront;   // S = px per virtual unit (scene is 1000x1000)
-const rnd = (a, b) => a + Math.random() * (b - a);
-let seed = 7; const sr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const rm=matchMedia('(prefers-reduced-motion:reduce)').matches,$=id=>document.getElementById(id),V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+const L1=`You only like me when I'm pretty.
+You only like me when you're drunk.
+So where do I stand?
 
-/* ---------- colour helpers ---------- */
-const hex = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
-const shade = (c, k) => c.map(v => Math.round(k >= 0 ? v + (255 - v) * k : v * (1 + k)));
-const css = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-const PINK = [hex('#e75480'), hex('#f78fb3'), hex('#ffd1e0')];
+I always tell you to stop playing with my feelings.
+You were so sweet when you're drunk, but too sour when you're sober.
+You act jealous whenever I talk about someone, yet when I confront you, I always receive the same words—"wala akong pake."
 
-/* ---------- paper grain texture ---------- */
-const noise = (() => {
-  const n = document.createElement('canvas'); n.width = n.height = 128;
-  const g = n.getContext('2d'), d = g.createImageData(128, 128);
-  for (let i = 0; i < d.data.length; i += 4) { d.data[i] = d.data[i + 1] = d.data[i + 2] = Math.random() * 255; d.data[i + 3] = Math.random() * 40; }
-  g.putImageData(d, 0, 0); return n;
-})();
-const grain = (g, a) => { g.save(); g.globalAlpha = a; g.fillStyle = g.createPattern(noise, 'repeat'); g.fill(); g.restore(); };
+How can you be so sweet and cruel at the same time?
+How can you make me feel so liked, only to deny it the next day?
+How can you be so playful with my feelings?
 
-const T = [500, 905];   // tip of the cone
-const quadPt = (a, c, b, t) => { const u = 1 - t; return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]]; };
-const ruffle = (g, a, c, b, n, amp) => {   // crinkled paper edge along a curve
-  for (let i = 0; i <= n; i++) { const p = quadPt(a, c, b, i / n); g.lineTo(p[0], p[1] + (i % 2 ? -1 : 1) * amp * (.6 + .4 * Math.sin(i * 1.9))); }
-};
-const satin = (g, x0, x1) => {
-  const q = g.createLinearGradient(x0, 0, x1, 0);
-  [[0, '#e56a97'], [.25, '#ff9dc0'], [.45, '#ffe0ec'], [.6, '#ff9dc0'], [1, '#d64f80']].forEach(s => q.addColorStop(...s));
-  return q;
-};
+If you're asking why I still like you despite every bad trait you show, I would probably answer, "I don't know."
+Because even though I know that I have to stop, a part of me wouldn't even budge.
 
-/* ---------- background, bokeh, ground shadow ---------- */
-function buildBG(g) {
-  g.setTransform(DPR, 0, 0, DPR, 0, 0);
-  let gr = g.createRadialGradient(W / 2, H * .45, 0, W / 2, H * .45, Math.max(W, H) * .8);
-  gr.addColorStop(0, '#fff7ec'); gr.addColorStop(.55, '#fbe4dd'); gr.addColorStop(1, '#f1bfcc');
-  g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  const fy = OY + 880 * S;   // soft table surface
-  gr = g.createLinearGradient(0, fy, 0, H); gr.addColorStop(0, 'rgba(232,190,190,0)'); gr.addColorStop(1, 'rgba(214,160,170,.45)');
-  g.fillStyle = gr; g.fillRect(0, fy, W, H - fy);
-  seed = 11;
-  for (let i = 0; i < 18; i++) {   // bokeh lights
-    const x = sr() * W, y = sr() * H * .85, r = (20 + sr() * 70) * Math.max(.6, S), pk = sr() > .5;
-    const b = g.createRadialGradient(x, y, r * .2, x, y, r);
-    b.addColorStop(0, pk ? 'rgba(255,190,210,.12)' : 'rgba(255,255,255,.2)');
-    b.addColorStop(.85, pk ? 'rgba(255,190,210,.18)' : 'rgba(255,255,255,.28)');
-    b.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = b; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
-  }
-  g.setTransform(DPR * S, 0, 0, DPR * S, OX * DPR, OY * DPR);
-  [[190, 24, .16], [130, 15, .32], [70, 8, .4]].forEach(([rx, ry, a]) => {   // layered elliptical shadow
-    g.save(); g.translate(500, 915); g.scale(rx, ry);
-    const s = g.createRadialGradient(0, 0, 0, 0, 0, 1); s.addColorStop(0, `rgba(110,40,60,${a})`); s.addColorStop(1, 'rgba(110,40,60,0)');
-    g.fillStyle = s; g.beginPath(); g.arc(0, 0, 1, 0, 7); g.fill(); g.restore();
-  });
-}
+Peculiar, isn't it?
 
-/* ---------- wrap: back interior + tissue flare (behind flowers) ---------- */
-function buildWrapBack(g) {
-  g.beginPath(); g.moveTo(...T); g.lineTo(290, 575); g.quadraticCurveTo(500, 470, 710, 575); g.closePath();
-  let gr = g.createLinearGradient(0, 520, 0, 905); gr.addColorStop(0, '#9c7853'); gr.addColorStop(1, '#7c5c3e');
-  g.fillStyle = gr; g.fill();
-  g.beginPath(); g.moveTo(500, 800); g.lineTo(272, 520); ruffle(g, [272, 520], [500, 410], [728, 520], 22, 7); g.closePath();
-  gr = g.createLinearGradient(0, 440, 0, 800); gr.addColorStop(0, '#f9b3cc'); gr.addColorStop(1, '#d97a9f');
-  g.fillStyle = gr; g.fill(); grain(g, .3);
-  g.save(); g.clip();
-  for (let i = 0; i <= 10; i++) {
-    const p = quadPt([272, 520], [500, 410], [728, 520], i / 10);
-    g.strokeStyle = i % 2 ? 'rgba(255,255,255,.22)' : 'rgba(150,40,80,.18)'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(500, 800); g.lineTo(p[0], p[1]); g.stroke();
-  }
-  g.restore();
-}
+But to be honest, I'm getting tired of this.
+I'm getting tired of telling myself that I should stop, yet still silently waiting for you.
+I'm getting tired of hearing the words, "You already know where you stand, so why are you still doing this?" knowing that I crave more than that.
 
-/* ---------- wrap: front tissue, kraft paper, fold, lip, ribbon bow ---------- */
-function buildWrapFront(g) {
-  // pink tissue front
-  const A = [282, 548], B = [718, 548], C = [500, 650];
-  g.beginPath(); g.moveTo(500, 880); g.lineTo(...A); ruffle(g, A, C, B, 26, 6); g.closePath();
-  let gr = g.createLinearGradient(282, 0, 718, 0);
-  [[0, '#e58bae'], [.3, '#f9b4cd'], [.55, '#ffd0e1'], [.8, '#f3a2c1'], [1, '#d96f97']].forEach(s => gr.addColorStop(...s));
-  g.fillStyle = gr; g.fill(); grain(g, .3);
-  g.save(); g.clip();
-  for (let i = 0; i <= 13; i++) {
-    const p = quadPt(A, C, B, i / 13);
-    g.strokeStyle = i % 2 ? 'rgba(255,255,255,.28)' : 'rgba(160,40,90,.2)'; g.lineWidth = 1.8;
-    g.beginPath(); g.moveTo(500, 860); g.lineTo(p[0], p[1]); g.stroke();
-  }
-  g.restore();
+I'm getting tired of everything…
 
-  // kraft/cream outer paper cone
-  const L = [292, 580], R = [708, 580], K = [500, 668];
-  const kraft = () => { g.beginPath(); g.moveTo(...L); g.quadraticCurveTo(...K, ...R); g.quadraticCurveTo(628, 752, ...T); g.quadraticCurveTo(372, 752, ...L); g.closePath(); };
-  gr = g.createLinearGradient(292, 0, 708, 0);
-  [[0, '#b98f66'], [.18, '#d8b98c'], [.5, '#ecd7b0'], [.82, '#d2b083'], [1, '#a9825a']].forEach(s => gr.addColorStop(...s));
-  g.save(); g.shadowColor = 'rgba(80,40,40,.35)'; g.shadowBlur = 16 * DPR * S; g.shadowOffsetY = -4 * DPR * S;
-  kraft(); g.fillStyle = gr; g.fill(); g.restore();
+And so tonight, after seeing and realizing that you don't really care about me, I have decided to end my feelings for you.
 
-  g.save(); kraft(); g.clip();
-  // overlapping right-hand fold panel with cast shadow
-  g.save(); g.shadowColor = 'rgba(60,30,20,.4)'; g.shadowBlur = 14 * DPR * S; g.shadowOffsetX = -5 * DPR * S;
-  g.beginPath(); g.moveTo(450, 621); g.quadraticCurveTo(579, 635, 708, 580); g.quadraticCurveTo(628, 752, ...T); g.quadraticCurveTo(462, 770, 450, 621); g.closePath();
-  const fg = g.createLinearGradient(450, 0, 708, 0); fg.addColorStop(0, '#f4e6c8'); fg.addColorStop(.4, '#efdcb6'); fg.addColorStop(1, '#c9a677');
-  g.fillStyle = fg; g.fill(); g.restore();
-  // crisp creases fanning to the tip
-  for (let i = 1; i < 7; i++) {
-    const p = quadPt(L, K, R, i / 7);
-    g.beginPath(); g.moveTo(...T); g.lineTo(p[0], p[1]); g.strokeStyle = 'rgba(90,60,30,.16)'; g.lineWidth = 1.4; g.stroke();
-    g.beginPath(); g.moveTo(T[0] + 1.5, T[1]); g.lineTo(p[0] + 1.5, p[1]); g.strokeStyle = 'rgba(255,250,235,.28)'; g.stroke();
-  }
-  const tg = g.createLinearGradient(0, 700, 0, 905); tg.addColorStop(0, 'rgba(80,50,30,0)'); tg.addColorStop(1, 'rgba(80,50,30,.28)');
-  g.fillStyle = tg; g.fillRect(0, 700, 1000, 210);
-  g.beginPath(); g.rect(0, 0, 1000, 1000); grain(g, .4);
-  g.restore();
+Ending my feelings for someone I've liked for months really hurts, but staying in something that isn't real would cost me more.
 
-  // folded-over lip along the rim
-  g.beginPath(); g.moveTo(...L); g.quadraticCurveTo(...K, ...R); g.lineTo(691, 608); g.quadraticCurveTo(500, 698, 309, 608); g.closePath();
-  gr = g.createLinearGradient(292, 0, 708, 0); [[0, '#d9bc90'], [.5, '#f6e8c9'], [1, '#cfae80']].forEach(s => gr.addColorStop(...s));
-  g.fillStyle = gr; g.fill(); grain(g, .3);
-  g.beginPath(); g.moveTo(691, 608); g.quadraticCurveTo(500, 698, 309, 608); g.strokeStyle = 'rgba(100,70,40,.4)'; g.lineWidth = 1.5; g.stroke();
+Liking you was one of the things that happened to me this year.
+I was able to like someone I never expected to like.
+I was able to accept the fact that feelings don't always have to be reciprocated.
+I was able to see the beauty in liking someone.
 
-  // satin ribbon: tails, band, loops, knot
-  g.save(); g.shadowColor = 'rgba(70,30,30,.35)'; g.shadowBlur = 6 * DPR * S; g.shadowOffsetY = 3 * DPR * S;
-  g.fillStyle = satin(g, 390, 500);
-  g.beginPath(); g.moveTo(490, 802); g.bezierCurveTo(462, 828, 436, 850, 396, 876); g.lineTo(412, 881); g.lineTo(424, 897); g.bezierCurveTo(452, 868, 486, 842, 510, 814); g.closePath(); g.fill();
-  g.fillStyle = satin(g, 500, 610);
-  g.beginPath(); g.moveTo(510, 802); g.bezierCurveTo(538, 828, 564, 848, 604, 868); g.lineTo(590, 874); g.lineTo(578, 890); g.bezierCurveTo(552, 866, 522, 842, 494, 814); g.closePath(); g.fill();
-  g.fillStyle = satin(g, 423, 577);
-  g.beginPath(); g.moveTo(423, 771); g.quadraticCurveTo(500, 801, 577, 771); g.lineTo(571, 797); g.quadraticCurveTo(500, 829, 429, 797); g.closePath(); g.fill();
-  const loops = [[[497, 794], [440, 738, 378, 752, 392, 802], [400, 836, 468, 824, 497, 800], 385, 500],
-                 [[503, 794], [560, 738, 622, 752, 608, 802], [600, 836, 532, 824, 503, 800], 500, 615]];
-  loops.forEach(([s, c1, c2, x0, x1]) => {
-    g.beginPath(); g.moveTo(...s); g.bezierCurveTo(...c1); g.bezierCurveTo(...c2); g.closePath();
-    g.fillStyle = satin(g, x0, x1); g.fill(); g.strokeStyle = 'rgba(150,30,80,.3)'; g.lineWidth = 1.5; g.stroke();
-  });
-  g.restore();
-  g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2;   // loop highlights
-  g.beginPath(); g.moveTo(492, 796); g.bezierCurveTo(450, 762, 408, 770, 412, 800); g.stroke();
-  g.beginPath(); g.moveTo(508, 796); g.bezierCurveTo(550, 762, 592, 770, 588, 800); g.stroke();
-  const kg = g.createLinearGradient(0, 784, 0, 810); kg.addColorStop(0, '#ffd6e5'); kg.addColorStop(1, '#d9598a');
-  g.beginPath(); g.ellipse(500, 797, 15, 13, 0, 0, 7); g.fillStyle = kg; g.fill(); g.strokeStyle = 'rgba(150,30,80,.35)'; g.stroke();
-}
+I hope it really ends here.
+Because I don't want to be confused until the end of the year.
+I want clarity, not charity for what you can only give.
+I want love, not a love bomb.
 
-/* ---------- tulip petals & blooms ---------- */
-function petalPath(g, w, h, b) {
-  g.beginPath(); g.moveTo(0, 0);
-  g.bezierCurveTo(-w, -h * .12, -w * 1.1, -h * .62, b - w * .08, -h);
-  g.bezierCurveTo(b + w * .12, -h * .66, w * 1.1, -h * .45, 0, 0); g.closePath();
-}
-function petal(g, o) {
-  g.save(); g.translate(o.ox, 0); g.rotate(o.lean);
-  petalPath(g, o.w, o.h, o.bend);
-  const gr = g.createLinearGradient(0, 0, 0, -o.h);
-  gr.addColorStop(0, css(shade(PINK[0], o.k))); gr.addColorStop(.5, css(shade(PINK[1], o.k))); gr.addColorStop(1, css(shade(PINK[2], o.k)));
-  g.fillStyle = gr; g.fill();
-  g.save(); g.clip();
-  const hg = g.createLinearGradient(-o.w, 0, o.w, 0);   // silky side highlight + shadowed edges
-  hg.addColorStop(0, 'rgba(120,10,60,.22)'); hg.addColorStop(.35, 'rgba(255,255,255,.28)'); hg.addColorStop(.6, 'rgba(255,255,255,0)'); hg.addColorStop(1, 'rgba(120,10,60,.25)');
-  g.fillStyle = hg; g.fillRect(-o.w * 1.3, -o.h, o.w * 2.6, o.h);
-  g.lineWidth = .7; g.strokeStyle = 'rgba(176,40,90,.2)';   // veins
-  for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * o.w * .05, -o.h * .02); g.quadraticCurveTo(i * o.w * .32, -o.h * .5, o.bend * .9 + i * o.w * .03, -o.h * .93); g.stroke(); }
-  const bg = g.createRadialGradient(0, 0, 0, 0, 0, o.h * .5);   // deep base shadow
-  bg.addColorStop(0, 'rgba(150,20,70,.35)'); bg.addColorStop(1, 'rgba(150,20,70,0)');
-  g.fillStyle = bg; g.fillRect(-o.w * 1.3, -o.h, o.w * 2.6, o.h);
-  petalPath(g, o.w, o.h, o.bend); g.lineWidth = o.h * .06; g.strokeStyle = 'rgba(160,30,80,.18)'; g.stroke();   // inner edge shadow
-  g.restore();
-  petalPath(g, o.w, o.h, o.bend); g.lineWidth = .8; g.strokeStyle = 'rgba(255,230,240,.5)'; g.stroke();
-  g.restore();
-}
-const TULIPS = [
-  [500, 300, 140, 0, .5], [420, 338, 132, -.12, .7], [585, 332, 135, .12, .35], [345, 388, 128, -.26, .85], [660, 388, 130, .26, .6],
-  [490, 418, 138, .02, .9], [405, 450, 125, -.14, .4], [582, 448, 126, .15, .8], [300, 475, 118, -.42, .55], [702, 475, 118, .42, .45], [500, 510, 120, 0, .65]
-].map(([x, y, h, rot, o], i) => ({ x, y, h, rot, o, ph: i * 1.9, g: (500 - x) * .1 })).sort((a, b) => a.y - b.y);
+And before we stopped talking, there was that time when you became my genie and asked me to make three wishes.
 
-function tulip(t, time) {
-  const sw = Math.sin(time * .9 + t.ph), dx = sw * 4.5, dy = Math.cos(time * .7 + t.ph) * 1.5;   // breeze sway
-  const bx = t.x + dx, by = t.y + dy, sc = t.h / 100;
-  // stem, converging to the wrapped bundle
-  const cx = (t.x + 500) / 2 + (t.x - 500) * .15, cy = (t.y + 720) / 2;
-  const sg = ctx.createLinearGradient(bx - 6, 0, bx + 6, 0);
-  sg.addColorStop(0, '#3f7d3a'); sg.addColorStop(.6, '#6fb35a'); sg.addColorStop(1, '#468540');
-  ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(bx, by); ctx.quadraticCurveTo(cx + dx * .4, cy, 500 + t.g, 720);
-  ctx.strokeStyle = sg; ctx.lineWidth = 9; ctx.stroke();
-  ctx.save(); ctx.translate(-1.8, 0); ctx.strokeStyle = 'rgba(200,240,170,.28)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
-  // bloom
-  ctx.save(); ctx.translate(bx, by); ctx.rotate(t.rot + sw * .03); ctx.scale(sc * (.85 + .2 * t.o), sc);
-  const sh = ctx.createRadialGradient(6, -40, 5, 6, -40, 75);
-  sh.addColorStop(0, 'rgba(120,20,60,.22)'); sh.addColorStop(1, 'rgba(120,20,60,0)');
-  ctx.fillStyle = sh; ctx.fillRect(-90, -130, 190, 190);
-  const o = t.o;
-  [{ ox: -4, lean: -(.1 + .34 * o), w: 31, h: 104, bend: 6, k: -.16 },
-   { ox: 4, lean: .1 + .34 * o, w: 31, h: 100, bend: -6, k: -.18 },
-   { ox: 0, lean: .02, w: 27, h: 97, bend: 2, k: -.06 },
-   { ox: -6, lean: -(.03 + .2 * o), w: 38, h: 95, bend: 10, k: 0 },
-   { ox: 6, lean: .03 + .2 * o, w: 38, h: 93, bend: -10, k: .05 }].forEach(p => petal(ctx, p));
-  ctx.restore();
-}
+My first wish was for you to be nicer to me.
+My second wish was for you to stop picking fights with me.
+And lastly, I wished for you to give me the peace of mind that I needed.
 
-/* ---------- leaves ---------- */
-const LEAVES = [[470, 600, 300, 560, 215, 380, 26], [530, 600, 700, 560, 785, 380, 26], [480, 600, 360, 470, 330, 250, 22],
-                [520, 600, 650, 480, 690, 270, 22], [450, 610, 250, 650, 190, 560, 20], [550, 610, 750, 650, 810, 555, 20]];
-function leaf(l, time, i) {
-  const s = Math.sin(time * .8 + i * 1.7) * 5, [bx, by, cx, cy, tx0, ty, w] = l, tx = tx0 + s, ccx = cx + s * .4;
-  const dx = tx - bx, dy = ty - by, len = Math.hypot(dx, dy), px = -dy / len, py = dx / len;
-  ctx.beginPath(); ctx.moveTo(bx, by); ctx.quadraticCurveTo(ccx + px * w, cy + py * w, tx, ty); ctx.quadraticCurveTo(ccx - px * w, cy - py * w, bx, by);
-  const gr = ctx.createLinearGradient(bx, by, tx, ty); gr.addColorStop(0, '#3f7d3a'); gr.addColorStop(1, '#6fb35a');
-  ctx.fillStyle = gr; ctx.fill();
-  ctx.beginPath(); ctx.moveTo(bx, by); ctx.quadraticCurveTo(ccx, cy, tx, ty);
-  ctx.strokeStyle = 'rgba(220,255,200,.4)'; ctx.lineWidth = 1.4; ctx.stroke();
-}
+I didn't know that, in order for you to fulfill those wishes, you would have to stop talking to me.
 
-/* ---------- falling petals (pre-rendered sprites for speed) ---------- */
-function sprite(k, blur) {
-  const c = document.createElement('canvas'); c.width = 110; c.height = 140;
-  const g = c.getContext('2d'); if (blur) g.filter = `blur(${blur}px)`;
-  g.translate(55, 125);
-  g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(-44, -16, -42, -70, -6, -100); g.bezierCurveTo(32, -74, 46, -28, 0, 0); g.closePath();
-  const gr = g.createLinearGradient(0, 0, 0, -100);
-  gr.addColorStop(0, css(shade(PINK[0], k))); gr.addColorStop(.45, css(shade(PINK[1], k))); gr.addColorStop(1, css(shade(PINK[2], k)));
-  g.fillStyle = gr; g.fill(); g.save(); g.clip();
-  const h = g.createLinearGradient(-40, 0, 40, 0); h.addColorStop(0, 'rgba(255,255,255,0)'); h.addColorStop(.4, 'rgba(255,255,255,.3)'); h.addColorStop(1, 'rgba(150,20,70,.2)');
-  g.fillStyle = h; g.fillRect(-50, -110, 100, 110);
-  g.strokeStyle = 'rgba(176,40,90,.22)'; g.lineWidth = 1.2;
-  for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(0, -2); g.quadraticCurveTo(i * 18, -50, i * 4 - 2, -92); g.stroke(); }
-  g.restore(); return c;
-}
-const SPR = [-.1, 0, .12].map(k => [0, 4, 7].map(b => sprite(k, b)));
-const PET = Array.from({ length: 34 }, () => ({}));
+Ironic, isn't it?
 
-function spawn(p, init) {
-  const z = p.z = rnd(.55, 1.3);
-  p.x0 = rnd(W * .15, W * .85); p.px = p.x0; p.y = init ? rnd(-H * .15, H * .9) : rnd(-100, -30);
-  p.vy = rnd(38, 75) * S * z; p.dx = rnd(-10, 10) * S; p.am = rnd(18, 55) * S;
-  p.fr = rnd(.6, 1.3); p.ph = rnd(0, 6.28); p.ff = rnd(1.3, 2.8);
-  p.r = rnd(0, 6.28); p.vr = rnd(-1.1, 1.1); p.sz = rnd(.3, .5) * z * S;
-  p.bl = z < .7 ? 1 : z > 1.15 ? 2 : 0; p.tone = Math.floor(rnd(0, 3)); p.layer = z < .85 ? 0 : 1;
-  p.landY = OY + (915 + (z - .9) * 50 + rnd(-10, 14)) * S; p.state = 0; p.a = 1; p.t = 0; p.tm = 0;
-}
-function update(p, dt) {
-  if (p.state === 0) {   // drifting down: sine sway + slow spin
-    p.t += dt; p.y += p.vy * dt; p.x0 += p.dx * dt;
-    p.px = p.x0 + Math.sin(p.t * p.fr + p.ph) * p.am; p.r += p.vr * dt;
-    if (p.y >= p.landY) { p.state = 1; p.tm = 0; p.r = rnd(-1.2, 1.2); }
-  } else {               // resting on the surface, then fading out
-    p.tm += dt; p.a = Math.max(0, 1 - Math.max(0, p.tm - .8) / 2.2);
-    if (p.a <= 0) spawn(p, false);
-  }
-}
-function drawPetals(layer) {
-  for (const p of PET) {
-    if (p.layer !== layer) continue;
-    const flip = Math.max(.14, Math.abs(Math.cos(p.t * p.ff + p.ph))), flat = p.state === 1;   // 3D-like flip
-    ctx.globalAlpha = p.a * (p.z < .7 ? .8 : .95);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.translate(p.px, p.y); ctx.rotate(p.r);
-    ctx.scale(flat ? p.sz : p.sz * flip, flat ? p.sz * .4 : p.sz);
-    ctx.drawImage(SPR[p.tone][p.bl], -55, -75);
-  }
-  ctx.globalAlpha = 1;
-}
+I wished for you to be nicer to me, and maybe the only way you could do that was by no longer giving me reasons to get hurt.
 
-/* ---------- layout & main loop ---------- */
-function layer() {
-  const c = document.createElement('canvas'); c.width = W * DPR; c.height = H * DPR;
-  const g = c.getContext('2d'); g.setTransform(DPR * S, 0, 0, DPR * S, OX * DPR, OY * DPR); return [c, g];
-}
-function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
-  cv.width = W * DPR; cv.height = H * DPR;
-  S = Math.min(H / 1000 * .96, W / 860); OX = (W - 1000 * S) / 2; OY = (H - 1000 * S) / 2;
-  let g; [bgL, g] = layer(); buildBG(g);
-  [wrapBack, g] = layer(); buildWrapBack(g);
-  [wrapFront, g] = layer(); buildWrapFront(g);
-  PET.forEach(p => spawn(p, true));
-}
-let last = performance.now(), time = 0;
-function frame(now) {
-  const dt = Math.min((now - last) / 1000, .05); last = now; time += dt;
-  PET.forEach(p => update(p, dt));
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(bgL, 0, 0);
-  drawPetals(0);                                  // far petals (behind bouquet)
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(wrapBack, 0, 0);
-  ctx.setTransform(DPR * S, 0, 0, DPR * S, OX * DPR, OY * DPR);
-  LEAVES.forEach((l, i) => leaf(l, time, i));
-  TULIPS.forEach(t => tulip(t, time));
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(wrapFront, 0, 0);
-  drawPetals(1);                                  // near petals (in front)
-  requestAnimationFrame(frame);
-}
-addEventListener('resize', resize);
-resize(); requestAnimationFrame(frame);
-})();
-</script>
-<script>
-/* ===== LETTERS (edit me!) ===== */
-const LETTERS=[
- {
-  "title": "To the Girl Who Keeps Going",
-  "doodle": "✿",
-  "body": [
-   "I know you're tired. I know there are days when you wake up already feeling like you've been carrying something for too long, yet you still get up, go to class, talk to people, laugh at jokes, finish your responsibilities, and act like everything is normal. Sometimes people only see that you're functioning, but they don't see how much effort it takes for you to actually do it. You've gotten so used to saying “okay lang” even when it isn't, and you've gotten good at turning things into jokes because somehow laughing feels easier than explaining why something hurts. But I hope you know that you don't have to prove that you're tired before you're allowed to rest. You don't have to wait until everything falls apart before you admit that you're struggling.",
-   "You've spent so much time worrying about whether you're doing enough—enough for school, enough for the people around you, enough for the things you love, enough to become the person you thought you would be by now. But you're still young, and you're still learning. You don't have to have your entire life figured out already. You're allowed to make mistakes, change your mind, have bad days, lose motivation, feel confused, and still be worthy of kindness. When you fail, please don't immediately turn it into proof that you're a failure. When someone doesn't choose you, don't turn it into proof that you're not worth choosing. When something ends, don't assume that it means nothing good will ever stay. A bad season is still just a season. It is not your entire life.",
-   "And look at you—you are still here. You're still writing, still creating, still studying, still dreaming, still making little plans even when you don't always feel like yourself. There's still a part of you that wants to experience things, meet people, make memories, and become someone you're proud of. Please protect that part of yourself. Don't let one painful chapter convince you that the whole story is going to hurt. There are still places you haven't seen, people you haven't met, stories you haven't written, and versions of yourself you haven't discovered yet. You don't have to keep going because you need to prove that you're strong. Keep going because there is still so much life ahead of you that you haven't gotten to know yet.",
-   "So, please, be gentler with yourself. Talk to yourself the way you would talk to someone you love. Rest when you need to. Cry when you need to. Ask for help when you need it. You don't have to carry everything quietly just because you've managed to carry it before. One day, you'll look back at this version of yourself and realize that she deserved much more kindness than she gave herself. I hope you can give her that kindness now instead of waiting for your future self to do it. You are still becoming, and you are allowed to take your time."
-  ],
-  "sign": [
-   "With love,",
-   "the version of you who finally learned that continuing to exist, try, and grow was already something worth being proud of."
-  ]
- },
- {
-  "title": "To the Girl Who Loves Too Much",
-  "doodle": "♡",
-  "body": [
-   "I know how deeply you can care about someone. You remember little things, replay conversations, notice changes in someone's tone, and sometimes give meaning to the smallest moments because they mattered to you. You can miss someone even when you know you shouldn't, and you can still care about someone even after you've decided that you need to walk away. Sometimes you wish you could just turn your feelings off and stop thinking about everything, because it would be so much easier if you didn't care this much. But caring deeply isn't something you should be ashamed of. You weren't stupid for feeling something sincerely. You weren't foolish for hoping. You were simply being honest about what your heart felt at the time.",
-   "But I hope you eventually learn that loving someone doesn't mean you have to keep waiting for them. Missing someone doesn't mean you have to return to them. Caring about someone doesn't mean you have to keep hurting yourself just to prove that your feelings were real. Sometimes you can love someone and still accept that they aren't meant to stay in your life the way you wanted them to. You can wish things had turned out differently while still choosing yourself. And I know that's hard for you because a part of you always wants one more conversation, one more explanation, one more sign that maybe things could still change. But sometimes there isn't another answer waiting for you. Sometimes what someone has already shown you is the answer, even if it's not the one you wanted.",
-   "You deserve a love that doesn't make you constantly question where you stand. You deserve someone who doesn't make you feel like affection is something you have to decode or earn. You deserve something steady, something honest, something that doesn't only appear when someone is lonely or confused. And until you experience that kind of love, please don't mistake uncertainty for romance. Don't convince yourself that being almost chosen is enough. Don't shrink yourself just so someone else feels comfortable keeping you around. You can be soft without being desperate, and you can love someone without losing yourself in the process. The next time you love someone, I hope you remember to keep loving yourself too.",
-   "And if someone leaves, let yourself grieve without making their absence a measurement of your worth. Cry if you need to. Write the letter even if you never send it. Remember the good parts without convincing yourself that you have to go back. Eventually, you'll understand that letting go doesn't mean your feelings weren't real—it means you finally decided that your own peace mattered too. I hope one day you experience a love that feels like being chosen without having to ask, a love that makes you feel safe instead of confused. And until then, please remember that being capable of loving deeply is beautiful, but learning when to stop giving pieces of yourself away is beautiful too."
-  ],
-  "sign": [
-   "With love,",
-   "the girl who is slowly learning that love should never require her to abandon herself."
-  ]
- },
- {
-  "title": "To the Version of Me I Don't Understand",
-  "doodle": "☾",
-  "body": [
-   "I'm sorry for all the times I looked at you and immediately thought something was wrong with you. I'm sorry for the days when you couldn't explain what you were feeling and you judged yourself for it. I'm sorry for every time you struggled to focus, forgot something, felt overwhelmed, lost motivation, or couldn't keep up with everything and immediately blamed yourself. I know there are moments when you don't even understand your own feelings. You can be surrounded by people and still feel alone, laugh with everyone and still feel heavy, or wake up feeling something you can't even put into words. Sometimes you wish you had a clear explanation for everything because having a reason would make the feelings easier to understand. But maybe you don't have to solve yourself like a problem.",
-   "You are allowed to say that you're struggling even when you can't explain exactly why. You don't have to wait until everything becomes unbearable before you admit that you need help. You can simply say, “I haven't been feeling like myself,” or “I don't really understand what's happening to me, but I'm having a hard time.” That is already enough. You don't need to have the perfect explanation for your feelings before someone is allowed to listen. And if you ever need professional help, that doesn't mean you've failed at taking care of yourself. It means you're choosing to understand yourself better instead of continuing to pretend that everything is fine. Please don't be ashamed of needing support.",
-   "I also hope you remember that your struggles aren't your entire identity. You are not only the girl who gets overwhelmed. You're also the girl who writes, creates, studies, dreams, makes things, gets excited about random ideas, and cares about the people around her. You have so many sides to you that sometimes you forget to look at them because you're too focused on the parts you don't like. You are allowed to be complicated. You're allowed to be emotional. You're allowed to have contradictions. You're allowed to be a work in progress. You don't need to become a completely different person just to deserve a good life. Maybe you simply need to learn how to take better care of the person who is already here.",
-   "So when your mind gets loud, please don't immediately turn against yourself. When you don't understand what you're feeling, give yourself time instead of punishment. When you have a bad day, let it be a bad day without deciding that your whole life is going badly. You don't have to figure everything out tonight. You don't have to become okay all at once. Take things one day at a time, and when you need someone, let yourself reach out. You deserve to be understood, including by yourself. And if you ever forget that, come back to this letter and remember that you are more than the things you struggle with, more than the things you can't explain, and more than the moments when you don't recognize yourself."
-  ],
-  "sign": [
-   "With love,",
-   "the version of you who is finally learning to listen to herself instead of constantly judging herself."
-  ]
- },
- {
-  "title": "To the Me I Will Become",
-  "doodle": "🌷",
-  "body": [
-   "I wonder where you are when you're reading this. I wonder what your life looks like, who is beside you, what you're doing, whether you're still writing, and whether you still get attached to little things the way you do now. I wonder if you're happier, but more than that, I hope you're peaceful. I hope you've found people who make you feel safe enough to be honest. I hope you no longer have to constantly question whether you're wanted or whether you're enough. I hope you have a life that feels like something you built for yourself instead of something you simply survived. I hope you have a home that feels safe, work that you're proud of, and people who know the real you and still choose to stay.",
-   "I hope you remember this version of yourself—the nineteen-year-old girl who was still trying to figure everything out. The girl who worried about school, relationships, her future, and whether she was doing enough. The girl who had so many ideas but sometimes didn't know where to begin. The girl who could spend hours thinking about one conversation, one person, or one small thing that happened during the day. Please don't look back at her and feel embarrassed by how much she cared. Don't call her naive just because she didn't know everything you know now. She was learning. She was trying. She made mistakes because she was human. And whether you realize it or not, every little thing she survived helped build the person you're reading this as.",
-   "If life turned out beautifully, I hope you stopped for a moment and appreciated it. I hope you didn't become so focused on your future that you forgot to live the present. I hope you still take pictures, still laugh until your stomach hurts, still get excited over small things, still write down thoughts that probably don't make sense to anyone else, and still let yourself be soft. And if life didn't turn out exactly the way you imagined, I hope you're still proud of yourself. Plans change. People leave. Dreams evolve. Sometimes the life we end up with looks nothing like the one we imagined when we were younger, and that doesn't automatically mean we failed. Maybe growing up is learning that you can build a beautiful life even when it doesn't follow the original blueprint.",
-   "So wherever you are when you read this, please look back kindly. Remember the girl who started everything. Remember how scared she was sometimes and how she still tried anyway. Remember the nights she wondered whether she would ever feel okay again. Remember the things she wanted so badly and the things she eventually learned to let go of. And if you have become someone she once dreamed of being, please don't forget to thank her. She got you there. If you haven't reached that place yet, that's okay too. You're still becoming. There's still time, still life, still another chapter. So keep writing your story, keep choosing yourself, keep making memories, and whatever happens, don't forget where you started."
-  ],
-  "sign": [
-   "With all the love I could give you,",
-   "from the girl who doesn't know exactly where life is taking her yet, but believes you'll eventually find somewhere beautiful."
-  ]
- }
-];
+I wished for you to stop picking fights with me, and maybe the only way for there to be no more fights was for us to stop talking.
 
-/* ===== ENVELOPE ===== */
-const env=document.getElementById("envWrap"),lw=document.getElementById("letters"),rd=document.getElementById("reader"),card=document.getElementById("card");
-const XS=["-34%","-12%","12%","34%"],RS=["-16deg","-5deg","5deg","16deg"];
-LETTERS.forEach((l,i)=>{const b=document.createElement("button");b.className="letter";
- b.style.cssText=`--i:${i};--x:${XS[i]};--r:${RS[i]}`;b.innerHTML=`<span>${l.doodle}</span>${l.title}`;
- b.onclick=e=>{e.stopPropagation();show(i)};lw.appendChild(b)});
-function toggle(o){env.classList.toggle("open",o);document.body.classList.toggle("opened",o)}
-env.onclick=()=>toggle(!env.classList.contains("open"));
-document.getElementById("closeEnv").onclick=()=>toggle(false);
+And I wished for peace of mind, not knowing that maybe the only way I could finally have it was by letting you go.
 
-/* ===== READER ===== */
-let cur=0;
-function show(i){cur=(i+LETTERS.length)%LETTERS.length;const l=LETTERS[cur];let d=0;
- const ps=l.body.map(t=>`<p style="animation-delay:${.15*d++}s">${t}</p>`).join("");
- card.innerHTML=`<button id="x" aria-label="Close">✕</button><h2>${l.title}</h2><div class="txt">${ps}<p class="sign" style="animation-delay:${.15*d}s">${l.sign[0]}<br>${l.sign[1]}</p></div>
- <div class="nav"><button id="pv">← Previous</button><span>${cur+1} / ${LETTERS.length}</span><button id="nx">Next →</button></div>`;
- card.scrollTop=0;rd.classList.add("on");
- document.getElementById("x").onclick=hide;document.getElementById("pv").onclick=()=>show(cur-1);document.getElementById("nx").onclick=()=>show(cur+1);}
-function hide(){rd.classList.remove("on")}
-rd.onclick=e=>{if(e.target===rd)hide()};
-addEventListener("keydown",e=>{if(e.key==="Escape")hide();if(rd.classList.contains("on")){if(e.key==="ArrowRight")show(cur+1);if(e.key==="ArrowLeft")show(cur-1)}});
-</script>
-</body>
-</html>
+Maybe I just didn't understand what my own wishes meant at the time.
+
+I wanted you to change the way you treated me, but maybe what I really needed was to stop waiting for you to treat me differently.
+
+I don't want to keep holding on to the sweet version of you that only appears sometimes.
+I don't want to keep waiting for you to say things when you're drunk that you would never say when you're sober.
+
+Because every time you make me feel wanted, I start hoping again.
+And every time you deny it, I'm the one left trying to convince myself that it meant nothing.
+
+I'm tired of that cycle.
+
+Maybe you don't realize how much your actions affect me.
+Maybe you don't mean to confuse me.
+Maybe, to you, some things are just jokes, random moments, or things you do without thinking.
+
+But to me, they mean something.
+
+And I don't want to keep pretending that they don't.
+
+I don't want to beg you to care about me.
+I don't want to force you to feel something you don't feel.
+And I don't want to keep waiting for an answer that you've already given me in your own way.
+
+Maybe this is what letting go is supposed to feel like.
+
+Not suddenly forgetting someone.
+Not waking up one day and realizing that you don't care anymore.
+
+Maybe it's simply choosing to stop waiting.
+
+So if this is where I finally stop liking you, then I hope I have the strength to stay away from the things that make me fall for you again.
+
+I hope I stop looking for signs.
+I hope I stop giving meaning to every little thing you do.
+I hope I stop waiting for you to look for me.
+I hope I stop wondering if you miss me when I'm gone.
+
+Because I don't want to spend another month wondering where I stand.
+
+I liked you.
+I really did.
+
+And maybe a part of me will still like you for a while.
+
+But I don't want that part of me to keep hurting the rest of me.
+
+So this time, I'm choosing myself.
+
+Not because I suddenly stopped caring, but because I'm finally tired of caring about someone who makes me feel like caring is something I should be ashamed of.
+
+I don't regret liking you.
+
+I don't regret the moments when you made me happy.
+I don't regret the times when I felt special because of you.
+
+I just wish I didn't have to keep questioning whether those moments meant anything to you.
+
+Maybe someday, I'll look back at all of this and realize that letting you go was the right thing to do.
+
+And maybe someday, I'll finally understand why I had to meet someone who taught me that not every feeling is meant to become a relationship.
+
+For now, I just want peace.
+
+I want clarity.
+
+I want to stop wondering.
+
+I want to stop hoping.
+
+And most importantly, I want to stop hurting myself by staying somewhere I already know I don't belong.
+
+So if you really don't care, then I'll accept it.
+
+And if you do care, but not in the way I want you to, I'll accept that too.
+
+I just can't keep living in between those two possibilities.
+
+I want clarity, not charity for what you can only give.
+
+I want love, not a love bomb.
+
+And this time, I want to choose myself enough to finally let you go.`;
+const L2=`To the person who taught me something,
+
+I thought for a long time that I was losing something. Now I understand that I was learning something.
+
+I realized that I don't have to be someone's favorite to be worth choosing. I realized that being liked only in certain moments is not the same as being cared for. And I realized that waiting for someone to change isn't love. Sometimes it's just fear of letting go.
+
+I also realized that I was never too much. I just kept offering my heart to someone who wasn't ready to hold it.
+
+But I'm not bitter. I'm grateful.
+
+Thank you for the moments that made me smile, even if they didn't last.
+Thank you for showing me that I can like someone with my whole heart.
+Thank you for helping me see what I want, and what I will never settle for again.
+And thank you for being the reason I finally learned to choose myself.`;
+const MSG=["Some days, you made me feel like the only person in the room.","And some days, I was just a joke you never thought twice about.","I kept asking where I stand. I think I always knew the answer.","I stayed longer than I should have, hoping the sweet version of you would stay too.","I'm tired of waiting, so I'm learning how to stop."];
+
+/* ===== Scene 1: three.js tulip ===== */
+const rd=new THREE.WebGLRenderer({canvas:$('cv'),alpha:true,antialias:true});rd.setPixelRatio(Math.min(devicePixelRatio,2));
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(38,1,.1,100);
+sc.add(new THREE.HemisphereLight(0xffd6e8,0x2a1030,.9));
+const dl=new THREE.DirectionalLight(0xffe0ec,1.1);dl.position.set(2,4,5);sc.add(dl);
+const back=new THREE.PointLight(0xff7aa8,1.2,14);back.position.set(0,1,-2.5);sc.add(back);
+function resize(){const w=innerWidth,h=innerHeight;rd.setSize(w,h);cam.aspect=w/h;cam.position.set(0,.2,w/h<.8?17:12);cam.lookAt(0,-.1,0);cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+const SL=3.6,GB=-2.8,GY=-2.7;
+const vc=document.createElement('canvas');vc.width=128;vc.height=256;{const x=vc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,128,256);for(let i=0;i<15;i++){x.strokeStyle=`rgba(190,70,120,${.1+Math.random()*.12})`;x.lineWidth=1+Math.random();x.beginPath();const px=6+i*8.7;x.moveTo(64+(px-64)*.3,256);x.quadraticCurveTo(px,128,64+(px-64)*.85,0);x.stroke()}}
+const veinT=new THREE.CanvasTexture(vc);
+function petalGeo(){const g=new THREE.PlaneGeometry(1,1,8,12),p=g.attributes.position,c=[];
+for(let i=0;i<p.count;i++){const s=p.getX(i)*2,v=p.getY(i)+.5,W=.9*Math.pow(Math.sin(Math.PI*(.28+.72*v)),.55);
+p.setXYZ(i,s*W*.5,v*1.5,.08+.32*Math.sin(Math.PI*Math.pow(v,.8))-.22*s*s*W-.5*Math.pow(v,4));
+const t=Math.min(1,Math.abs(s)*.6+v*v*.5),a=[1,.88,.92],b=[.9,.3,.52];c.push(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t)}
+g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.computeVertexNormals();return g}
+const PG=petalGeo();
+function leafG(sd){const g=new THREE.PlaneGeometry(1,1,3,14),p=g.attributes.position,c=[];
+for(let i=0;i<p.count;i++){const s=p.getX(i)*2,v=p.getY(i)+.5,w=.2*Math.sin(Math.PI*Math.pow(v,.7));
+p.setXYZ(i,s*w+sd*.7*v*v,v*2.3,-Math.abs(s)*w*.6);const m=Math.abs(s)<.12?1:.8;c.push(.3*m+.2*(m>.9),.5*m+.2*(m>.9),.27*m)}
+g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.computeVertexNormals();return g}
+const LG=[leafG(-1),leafG(1)],leafM=new THREE.MeshStandardMaterial({vertexColors:true,side:2,roughness:.9}),
+stemM=new THREE.MeshStandardMaterial({color:0x5d8a4a,roughness:.8,emissive:0x000000});
+function tulip(tint,open){const g=new THREE.Group(),pet=[],h=new THREE.Group();
+const cur=new THREE.CatmullRomCurve3([V3(0,0,0),V3(.12,1.2,.06),V3(-.08,2.5,0),V3(0,SL,0)]);
+g.add(new THREE.Mesh(new THREE.TubeGeometry(cur,24,.055,8),stemM));
+[-1,1].forEach((sd,i)=>{const l=new THREE.Mesh(LG[i],leafM);l.position.y=.05;l.rotation.y=sd*.7;g.add(l)});
+h.position.y=SL;
+for(let k=0;k<6;k++){const o=k<3,piv=new THREE.Group();piv.rotation.y=(k%3)*2.0944+(o?0:1.0472);
+const m=new THREE.Mesh(PG,new THREE.MeshStandardMaterial({vertexColors:true,map:veinT,side:2,roughness:.5,emissive:0x6a1838,emissiveIntensity:.25,transparent:true,color:new THREE.Color(tint[0]*(o?1:1.06),tint[1]*(o?1:1.06),tint[2]*(o?1:1.06))}));
+m.position.z=o?0:-.05;m.scale.setScalar(o?1:.9);m.userData={tilt:o?.28:.12,idx:k};m.rotation.x=open*m.userData.tilt;piv.add(m);h.add(piv);pet.push(m)}
+const pi=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,.5,8),new THREE.MeshStandardMaterial({color:0x9ab85a}));pi.position.y=.25;h.add(pi);g.add(h);g.position.y=GB;
+return{g,pet,h,setOpen:o=>pet.forEach(m=>m.rotation.x=o*m.userData.tilt)}}
+const hero=tulip([1,1,1],1);sc.add(hero.g);
+/* dust / pollen */
+const sp=document.createElement('canvas');sp.width=sp.height=32;{const x=sp.getContext('2d'),r=x.createRadialGradient(16,16,0,16,16,16);r.addColorStop(0,'#fff');r.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=r;x.fillRect(0,0,32,32)}
+const N=140,dp=new Float32Array(N*3),dv=[];for(let i=0;i<N;i++){dp.set([(Math.random()-.5)*10,(Math.random()-.5)*8,(Math.random()-.5)*5],i*3);dv.push(.1+Math.random()*.2)}
+const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+const dm=new THREE.PointsMaterial({size:.09,map:new THREE.CanvasTexture(sp),color:0xffc6dc,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending});sc.add(new THREE.Points(dg,dm));
+
+/* ===== Interaction: petals fall ===== */
+const ray=new THREE.Raycaster(),mo=new THREE.Vector2(),falls=[],FADE=new THREE.Color(.5,.4,.42);let tapped=0,live=true,msgTimer,tw;
+const msg=$('msg');
+function say(t){clearInterval(tw);msg.classList.remove('on');setTimeout(()=>{msg.textContent='';msg.classList.add('on');if(rm){msg.textContent=t;return}let i=0;tw=setInterval(()=>{msg.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(tw)},32)},rm?0:350)}
+function pick(e){const r=$('cv').getBoundingClientRect();mo.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mo,cam);const hit=ray.intersectObjects(hero.pet.filter(m=>m.parent&&m.parent!==sc));return hit.length?hit[0].object:null}
+$('cv').addEventListener('pointermove',e=>{if(!live)return;const h=pick(e);hero.pet.forEach(m=>m.material.emissiveIntensity=m===h?.8:.25);$('cv').style.cursor=h?'pointer':'default'});
+$('cv').addEventListener('pointerdown',e=>{if(!live)return;const m=pick(e);if(!m)return;
+const n=tapped++,last=n===5;$('hint').classList.remove('on');m.material.emissiveIntensity=.25;sc.attach(m);
+falls.push({m,t:0,ph:Math.random()*6,sp:last?.5:1,c0:m.material.color.clone(),cb:last?()=>setTimeout(()=>{live=false;msg.classList.remove('on');openL1()},1800):null});
+say(MSG[n]||'');if(last){live=false;setTimeout(()=>msg.classList.remove('on'),0)}});
+setTimeout(()=>$('hint').classList.add('on'),2500);
+
+/* ===== Full Letter (shared builder) ===== */
+function letter(txt,cls,btn,done,deco){
+const o=document.createElement('div');o.className='ov';const s=document.createElement('div');s.className='sheet '+cls;if(deco)s.innerHTML=deco;
+txt.trim().split('\n\n').forEach(p=>{const d=document.createElement('div');d.className='p';p.split('\n').forEach(l=>{const e=document.createElement('span');e.className='l';e.textContent=l;e.style.cssText=`transform:rotate(${((Math.random()-.5)*.8).toFixed(2)}deg) translateX(${(Math.random()*4).toFixed(1)}px);opacity:${(.84+Math.random()*.16).toFixed(2)};letter-spacing:${(Math.random()*.4).toFixed(2)}px`;d.appendChild(e)});s.appendChild(d)});
+const b=document.createElement('button');b.className='hw';b.textContent=btn;s.appendChild(b);o.appendChild(s);document.body.appendChild(o);
+const ps=[...s.querySelectorAll('.p')];
+const chk=()=>ps.forEach(p=>{if(!p.classList.contains('on')&&(rm||p.getBoundingClientRect().top<innerHeight*.92))p.classList.add('on')});
+chk();const iv=setInterval(()=>{if(!o.isConnected)return clearInterval(iv);chk()},250);o.addEventListener('scroll',chk);
+requestAnimationFrame(()=>o.classList.add('show'));
+b.onclick=()=>{o.classList.add('out');setTimeout(()=>{o.remove();done()},900)}}
+function openL1(){letter(L1,'','let it go',()=>setTimeout(rebirth,2000))}
+
+/* ===== Rebirth ===== */
+const TINTS=[[1,.97,.97],[1,.85,.9],[.97,.62,.78],[1,.9,.92],[.9,.5,.72],[1,.78,.85],[.95,.7,.82],[1,.92,.95],[.88,.45,.68],[1,.8,.88]];
+let rb=null,bq=[],wrap=null;const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
+function noiseTex(c1,fib){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle=c1;x.fillRect(0,0,128,128);for(let i=0;i<260;i++){x.strokeStyle=`rgba(${fib},${Math.random()*.2})`;x.beginPath();const a=Math.random()*128,b=Math.random()*128;x.moveTo(a,b);x.lineTo(a+Math.random()*14-7,b+Math.random()*14-7);x.stroke()}return new THREE.CanvasTexture(c)}
+function cone(rt,rb2,h,cy,mat,cr,ph){const g=new THREE.CylinderGeometry(rt,rb2,h,64,14,true),p=g.attributes.position;
+for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i),a=Math.atan2(z,x),k=1+cr*Math.sin(a*7+y*2.5+ph)+cr*.6*Math.sin(a*13-y*4);p.setXYZ(i,x*k,y,z*k)}
+g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.position.y=cy;return m}
+function buildWrap(){const w=new THREE.Group();w.position.y=GB;
+const kraft=new THREE.MeshStandardMaterial({map:noiseTex('#b98c5a','110,70,30'),side:2,roughness:.95,transparent:true,opacity:0}),
+tis=new THREE.MeshStandardMaterial({color:0xffb9d0,side:2,roughness:.9,transparent:true,opacity:0,depthWrite:false}),
+rib=new THREE.MeshStandardMaterial({color:0xd23a76,roughness:.25,metalness:.15,side:2,transparent:true,opacity:0});
+w.add(cone(1.3,.22,2.1,1.0,kraft,.035,0));w.add(cone(1.65,.3,2.4,1.25,tis,.07,1.3));
+const ring=new THREE.Mesh(new THREE.TorusGeometry(.72,.05,8,48),rib);ring.rotation.x=Math.PI/2;ring.position.y=.95;w.add(ring);
+[-1,1].forEach(s=>{const lp=new THREE.Mesh(new THREE.TorusGeometry(.2,.045,8,24),rib);lp.scale.set(1.3,1,.5);lp.position.set(s*.24,.95,.76);lp.rotation.z=s*.45;w.add(lp);
+const tg=new THREE.PlaneGeometry(.12,.85,1,8),pp=tg.attributes.position;for(let i=0;i<pp.count;i++)pp.setX(i,pp.getX(i)+Math.sin(pp.getY(i)*3)*.05);tg.computeVertexNormals();
+const t=new THREE.Mesh(tg,rib);t.position.set(s*.1,.5,.78);t.rotation.set(-.15,0,s*.18);w.add(t)});
+const kn=new THREE.Mesh(new THREE.SphereGeometry(.08,12,12),rib);kn.position.set(0,.95,.78);w.add(kn);
+w.userData.mats=[kraft,tis,rib];return w}
+function rebirth(){rb={t0:performance.now()/1000};$('bg2').style.opacity=0;
+TINTS.forEach((t,i)=>{const o=tulip(t,0);const a=(i-4.5)*.11;o.g.rotation.set((i%2?.2:-.15)+((i*13)%5-2)*.03,(i*2.1)%6,-a);o.g.userData.s=.78+.22*((i*7)%5)/4;o.g.userData.d=1.6+((i*37)%10)*.28;o.g.visible=false;sc.add(o.g);bq.push(o)})}
+function rebirthTick(t){stemM.emissive.setRGB(.5,.2,.3).multiplyScalar(ease(t/1.5));back.intensity=1.2+2*ease(t/1.5);
+if(t>1.6&&hero.g.parent){sc.remove(hero.g);stemM.emissive.setRGB(0,0,0);$('bg2').style.opacity=1}
+bq.forEach(o=>{const u=(t-o.g.userData.d)/3;o.g.visible=u>0;if(u>0){const g=ease(u),s=o.g.userData.s;o.g.scale.set(s,s*Math.max(.01,g),s);o.h.scale.setScalar(.3+.7*ease((u-.3)/.7));o.setOpen(ease((u-.55)/.45))}});
+if(t>6&&!wrap){wrap=buildWrap();sc.add(wrap)}
+if(wrap){const a=ease((t-6)/2.5);wrap.userData.mats.forEach(m=>m.opacity=m===wrap.userData.mats[1]?a*.55:a)}
+if(t>11&&!rb.env){rb.env=1;showEnv()}}
+
+/* ===== Envelope ===== */
+function showEnv(){const e=document.createElement('div');e.id='env';e.innerHTML='<div class="bk"></div><div class="pp"></div><div class="fr"></div><div class="fl"></div><div class="sl">🌷</div>';
+const h=document.createElement('div');h.id='eh';h.textContent='open it';document.body.append(e,h);
+requestAnimationFrame(()=>{e.classList.add('on');h.classList.add('on')});let used=0;
+e.onclick=()=>{if(used)return;used=1;h.classList.remove('on');if(navigator.vibrate)navigator.vibrate(20);e.classList.add('crack');
+setTimeout(()=>e.classList.add('open'),500);
+setTimeout(()=>letter(L2,'lav','close',()=>{e.style.opacity=0;setTimeout(()=>{e.remove();h.remove()},1500);finale()},'<i>🌷</i>'),2200)}}
+
+/* ===== Scene 4: tara na codm ===== */
+function finale(){const d=document.createElement('div');d.id='dim';
+d.innerHTML='<div class="card" id="cd"><div class="tara">tara na codm</div><div id="pn"></div><div class="bt"><button id="G">G</button><button id="P">Pass</button></div></div>';document.body.appendChild(d);
+requestAnimationFrame(()=>d.classList.add('on'));
+const PM=["bawal ganern.","tara na kasi.","isang game lang, promise.","sige na please.","wag ka na mahiya, tara na.","hindi pwede yan.","G na yan."],G=$('G'),P=$('P'),pn=$('pn'),cd=$('cd');let n=0,gs=1,ps=1,gone=0;
+P.onclick=e=>{e.stopPropagation();if(n>=7)return;pn.textContent=PM[n];pn.classList.remove('pop');void pn.offsetWidth;pn.classList.add('pop');n++;ps*=.77;gs*=1.28;
+cd.style.setProperty('--ps',ps);cd.style.setProperty('--gs',gs);G.classList.add('hot');P.classList.remove('wob');void P.offsetWidth;P.classList.add('wob');
+if(navigator.vibrate)navigator.vibrate(25);if(n>=7){P.style.pointerEvents='none';P.style.visibility='hidden'}};
+const go=()=>{if(gone)return;gone=1;d.classList.add('off');setTimeout(()=>{d.remove();ending()},800)};
+G.onclick=e=>{e.stopPropagation();go()};d.onclick=()=>{if(n>=7)go()}}
+function ending(){for(let i=0;i<55;i++){const s=document.createElement('span');s.className='pt'+(i%4==0?' s':'');s.style.cssText=`left:${Math.random()*100}vw;--d:${5+Math.random()*5}s;--dx:${(Math.random()-.5)*160}px;--r:${Math.random()*720-360}deg;animation-delay:${Math.random()*3}s`;document.body.appendChild(s)}
+const e=document.createElement('div');e.id='end';e.innerHTML='<div class="t">on ka na, inv mo me</div><button>replay</button>';document.body.appendChild(e);
+requestAnimationFrame(()=>e.classList.add('on'));const b=e.querySelector('button');setTimeout(()=>b.style.opacity=1,3200);b.onclick=()=>location.reload()}
+
+/* ===== Render loop ===== */
+let last=performance.now()/1000;
+function loop(){const T=performance.now()/1000,dt=Math.min(.05,T-last);last=T;
+if(!rm&&hero.g.parent){hero.g.rotation.z=Math.sin(T*.8)*.02;hero.h.rotation.z=Math.sin(T*.9+1)*.03;hero.h.rotation.x=Math.sin(T*.7)*.02}
+falls.forEach(f=>{f.t+=dt;const m=f.m;
+if(!f.land){m.position.y-=dt*f.sp*(.9+.4*Math.sin(f.t*2.1+f.ph));m.position.x+=Math.sin(f.t*1.6+f.ph)*dt*.9*f.sp;m.position.z+=Math.cos(f.t*1.2+f.ph)*dt*.3*f.sp;
+m.rotation.x+=dt*(.9+Math.sin(f.t*1.3))*f.sp;m.rotation.y+=dt*1.1*f.sp;m.rotation.z+=dt*1.4*Math.sin(f.t*1.9+f.ph)*f.sp;
+if(m.position.y<=GY){f.land=1;f.lt=0;m.position.y=GY;f.q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-1.45,Math.random()*6.28,0))}}
+else{f.lt+=dt;m.quaternion.slerp(f.q,Math.min(1,dt*2.5));const a=Math.min(1,f.lt/5);m.material.color.copy(f.c0).lerp(FADE,a);m.material.opacity=1-.35*a;if(f.cb&&f.lt>.9){const c=f.cb;f.cb=null;c()}}});
+if(rb)rebirthTick(T-rb.t0);
+const p=dg.attributes.position;for(let i=0;i<N;i++){let y=p.getY(i)+(rb?-dv[i]*.5:dv[i]*.3)*dt;if(y>4)y=-4;if(y<-4)y=4;p.setY(i,y);p.setX(i,p.getX(i)+Math.sin(T+i)*dt*.1)}p.needsUpdate=true;
+if(rb)dm.color.setHex(0xffe0a0);
+rd.render(sc,cam);requestAnimationFrame(loop)}
+loop();
+</script></body></html>
