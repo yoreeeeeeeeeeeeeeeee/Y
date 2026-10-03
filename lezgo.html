@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>petals</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Cormorant+Garamond:ital,wght@1,500&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink1:#1b2340;--ink2:#4a2a6a;--paper:#f6efdc;--pink:#e86a9a;--gold:#e8b86a;--serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;--hw:'Caveat','Segoe Script','Bradley Hand',cursive}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#1a0a1e;font-family:var(--serif)}
+.bg{position:fixed;inset:0}
+#bg1{background:radial-gradient(ellipse at 50% 40%,#6b2a54,#3a1740 45%,#1d0c24)}
+#bg2{background:radial-gradient(ellipse at 50% 45%,#ffd2c0,#f29aa6 45%,#a8527a);opacity:0;transition:opacity 9s ease}
+#glow{position:fixed;left:50%;top:42%;width:min(90vw,520px);aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,150,190,.35),transparent 65%);pointer-events:none;animation:gl 6s ease-in-out infinite}
+@keyframes gl{50%{opacity:.6;transform:translate(-50%,-50%) scale(1.08)}}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(10,2,14,.55))}
+canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:manipulation}
+#msg,#hint{position:fixed;left:50%;transform:translateX(-50%);width:min(86vw,560px);text-align:center;color:#ffe3ee;font:italic 500 clamp(21px,5.2vw,30px)/1.4 var(--serif);text-shadow:0 2px 14px rgba(0,0,0,.6);opacity:0;transition:opacity .35s;pointer-events:none}
+#msg{top:11%}#msg.on{opacity:1}
+#hint{bottom:9%;font-size:20px;transition:opacity 2s}#hint.on{opacity:.8}
+/* Full letter */
+.ov{position:fixed;inset:0;overflow-y:auto;scroll-behavior:smooth;background:rgba(10,3,14,.72);opacity:0;transition:opacity 1.2s;-webkit-overflow-scrolling:touch;perspective:1200px}
+.ov.show{opacity:1}.ov.out{opacity:0;transition:opacity .9s}.ov.out .sheet{transform:rotateX(35deg) scale(.9) translateY(30px)}
+.sheet{position:relative;width:100%;min-height:100dvh;padding:72px 30px 80px;margin:0 auto;font:500 26px/36px var(--hw);color:var(--ink1);transition:transform .9s ease;
+background:repeating-linear-gradient(transparent 0 35px,rgba(90,110,160,.3) 35px 36px),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8 .15' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .25 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"),linear-gradient(#f8f1de,#efe5c9);
+box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 50px rgba(130,95,40,.28),inset 0 0 8px rgba(100,70,30,.35)}
+.sheet:after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;transform:translateY(-50%);pointer-events:none;background:linear-gradient(transparent,rgba(90,60,20,.13) 45%,rgba(255,255,255,.35) 52%,transparent)}
+.sheet:before{content:"";position:absolute;right:0;bottom:0;width:34px;height:34px;background:linear-gradient(315deg,rgba(0,0,0,.28),rgba(0,0,0,.05) 50%,#2a1a14 51%);filter:blur(.5px)}
+@media(min-width:700px){.sheet{width:min(600px,92vw);margin:5vh auto;min-height:150dvh;border-radius:3px 6px 4px 5px;padding:72px 54px 90px}}
+.sheet.lav{font:500 24px/36px 'Dancing Script','Segoe Script',cursive;color:var(--ink2);background:repeating-linear-gradient(transparent 0 35px,rgba(130,100,190,.22) 35px 36px),linear-gradient(#f6eefa,#f1e8ea) }
+.sheet.lav i{position:absolute;right:26px;top:20px;font-size:44px;opacity:.13;font-style:normal;filter:grayscale(1)}
+.p{margin-bottom:36px;clip-path:inset(0 100% 0 0);opacity:.2;transition:clip-path 1.6s linear,opacity 1.2s}
+.p.on{clip-path:inset(-4px -4px -4px -4px);opacity:1}
+.l{display:block}
+.hw{display:block;margin:20px auto 0;min-height:48px;padding:6px 26px;font:inherit;font-size:28px;color:inherit;background:none;border:2px solid currentColor;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;cursor:pointer}
+.hw:active{transform:scale(.95)}
+/* Envelope */
+#env{position:fixed;right:5%;bottom:3%;width:min(46vw,230px);aspect-ratio:3/2;transform:rotate(7deg);perspective:700px;opacity:0;transition:opacity 2s;cursor:pointer;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4))}
+#env.on{opacity:1}#env>*{position:absolute;inset:0}
+#env .bk{background:linear-gradient(#6f4ea0,#5b3c8a);border-radius:4px}
+#env .pp{inset:8% 7% 10%;background:#f6efdc;transition:transform 1s ease}
+#env.open .pp{transform:translateY(-75%)}
+#env .fr{background:linear-gradient(135deg,#8467b4,#6a4a9c);clip-path:polygon(0 0,50% 55%,100% 0,100% 100%,0 100%);border-radius:4px}
+#env .fl{height:58%;bottom:auto;background:linear-gradient(#9477c4,#7e5eae);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .9s;z-index:3;backface-visibility:visible}
+#env.open .fl{transform:rotateX(180deg);z-index:0}
+#env .sl{inset:auto;left:50%;top:44%;width:19%;aspect-ratio:1;margin:-9.5% 0 0 -9.5%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a05cc8,#4a1f6e);box-shadow:0 2px 5px rgba(0,0,0,.5);z-index:5;display:grid;place-items:center;font-size:clamp(11px,3vw,17px);transition:all .5s}
+#env.crack .sl{transform:scale(1.3) rotate(14deg);opacity:0}
+#eh{position:fixed;right:5%;bottom:calc(3% + min(31vw,155px) + 22px);width:min(46vw,230px);text-align:center;color:#fff;text-shadow:0 2px 8px rgba(60,10,40,.9);font:italic 22px var(--serif);opacity:0;transition:opacity 2s}#eh.on{opacity:.9}
+/* Scene 4 */
+#dim{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(60,20,30,.45),rgba(20,5,12,.85));opacity:0;transition:opacity 1.2s}
+#dim.on{opacity:1}#dim.off{opacity:0;transition:opacity .8s}
+.card{width:fit-content;min-width:min(310px,90vw);max-width:94vw;max-height:94dvh;overflow:hidden;padding:30px 20px 26px;text-align:center;transform:rotate(-2deg);color:var(--ink2);font-family:var(--hw);
+background:repeating-linear-gradient(transparent 0 31px,rgba(130,100,190,.2) 31px 32px),linear-gradient(#fbf4e2,#f1e6cc);box-shadow:0 18px 40px rgba(0,0,0,.55),inset 0 0 30px rgba(140,100,50,.2);border-radius:3px 7px 4px 6px}
+.tara{font-size:clamp(38px,11vw,54px);line-height:1.1}
+#pn{min-height:64px;margin:12px auto;padding:8px 14px;font-size:clamp(24px,7vw,32px);line-height:1.2;color:#5a2d1f;max-width:300px}
+#pn.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1);background:#ffe98a;box-shadow:2px 4px 10px rgba(0,0,0,.3);transform:rotate(2deg)}
+@keyframes pop{from{transform:scale(.3) rotate(-10deg);opacity:0}}
+.bt{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;min-height:56px}
+.bt button{font:600 22px var(--hw);border:0;border-radius:14px;cursor:pointer;transition:transform .1s,box-shadow .1s}
+#G{width:min(calc(100px*var(--gs,1)),86vw);height:min(calc(54px*var(--gs,1)),42vh);font-size:clamp(24px,calc(24px*var(--gs,1)),22vw);color:#5a2a10;background:linear-gradient(#ffd98a,#f2a0b5);box-shadow:0 5px 0 #c8708a,0 8px 14px rgba(0,0,0,.35)}
+#G.hot{animation:pls 1.4s ease-in-out infinite;box-shadow:0 5px 0 #c8708a,0 0 calc(10px*var(--gs,1)) rgba(255,190,120,.8)}
+@keyframes pls{50%{filter:brightness(1.12)}}
+#G:active{transform:translateY(4px);box-shadow:0 1px 0 #c8708a}
+#P{width:calc(100px*var(--ps,1));height:calc(54px*var(--ps,1));font-size:calc(22px*var(--ps,1));padding:0;color:#555;background:linear-gradient(#cfcfd4,#a9a9b2);box-shadow:0 4px 0 #85858e;opacity:calc(.35 + .65*var(--ps,1))}
+#P.wob{animation:wob .4s}
+@keyframes wob{25%{transform:rotate(-12deg)}50%{transform:rotate(10deg)}75%{transform:rotate(-6deg)}}
+.pt{position:fixed;top:-6vh;width:12px;height:18px;border-radius:70% 0 70% 0;background:linear-gradient(135deg,#ffb3cf,#e5628f);animation:fall var(--d) linear forwards;pointer-events:none}
+.pt.s{width:6px;height:6px;border-radius:50%;background:#ffe8a8;box-shadow:0 0 8px #ffd27a}
+@keyframes fall{to{transform:translate3d(var(--dx),112vh,0) rotate(var(--r))}}
+#end{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;opacity:0;transition:opacity 1.5s;color:#fff;font:500 clamp(40px,12vw,76px)/1.15 var(--hw);padding:24px;background:radial-gradient(ellipse at center,rgba(70,15,45,.78),rgba(70,15,45,.35) 60%,transparent 85%);text-shadow:0 2px 6px rgba(60,10,40,.9),0 0 24px rgba(255,120,160,.9)}
+#end.on{opacity:1}#end .t{animation:gp 3s ease-in-out infinite}
+@keyframes gp{50%{text-shadow:0 0 40px rgba(255,170,200,1);transform:scale(1.04)}}
+#end button{font:500 26px var(--hw);min-height:46px;padding:4px 24px;color:#fff;background:rgba(255,255,255,.12);border:2px solid #fff;border-radius:30px;cursor:pointer;opacity:0;transition:opacity 1s}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style></head><body>
+<div class="bg" id="bg1"></div><div class="bg" id="bg2"></div><div id="glow"></div>
+<canvas id="cv"></canvas><div id="vig"></div><div id="msg"></div><div id="hint">tap a petal</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const rm=matchMedia('(prefers-reduced-motion:reduce)').matches,$=id=>document.getElementById(id),V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+const L1=`You only like me when I'm pretty.
+You only like me when you're drunk.
+So where do I stand?
+
+I always tell you to stop playing with my feelings.
+You were so sweet when you're drunk, but too sour when you're sober.
+You act jealous whenever I talk about someone, yet when I confront you, I always receive the same words—"wala akong pake."
+
+How can you be so sweet and cruel at the same time?
+How can you make me feel so liked, only to deny it the next day?
+How can you be so playful with my feelings?
+
+If you're asking why I still like you despite every bad trait you show, I would probably answer, "I don't know."
+Because even though I know that I have to stop, a part of me wouldn't even budge.
+
+Peculiar, isn't it?
+
+But to be honest, I'm getting tired of this.
+I'm getting tired of telling myself that I should stop, yet still silently waiting for you.
+I'm getting tired of hearing the words, "You already know where you stand, so why are you still doing this?" knowing that I crave more than that.
+
+I'm getting tired of everything…
+
+And so tonight, after seeing and realizing that you don't really care about me, I have decided to end my feelings for you.
+
+Ending my feelings for someone I've liked for months really hurts, but staying in something that isn't real would cost me more.
+
+Liking you was one of the things that happened to me this year.
+I was able to like someone I never expected to like.
+I was able to accept the fact that feelings don't always have to be reciprocated.
+I was able to see the beauty in liking someone.
+
+I hope it really ends here.
+Because I don't want to be confused until the end of the year.
+I want clarity, not charity for what you can only give.
+I want love, not a love bomb.
+
+And before we stopped talking, there was that time when you became my genie and asked me to make three wishes.
+
+My first wish was for you to be nicer to me.
+My second wish was for you to stop picking fights with me.
+And lastly, I wished for you to give me the peace of mind that I needed.
+
+I didn't know that, in order for you to fulfill those wishes, you would have to stop talking to me.
+
+Ironic, isn't it?
+
+I wished for you to be nicer to me, and maybe the only way you could do that was by no longer giving me reasons to get hurt.
+
+I wished for you to stop picking fights with me, and maybe the only way for there to be no more fights was for us to stop talking.
+
+And I wished for peace of mind, not knowing that maybe the only way I could finally have it was by letting you go.
+
+Maybe I just didn't understand what my own wishes meant at the time.
+
+I wanted you to change the way you treated me, but maybe what I really needed was to stop waiting for you to treat me differently.
+
+I don't want to keep holding on to the sweet version of you that only appears sometimes.
+I don't want to keep waiting for you to say things when you're drunk that you would never say when you're sober.
+
+Because every time you make me feel wanted, I start hoping again.
+And every time you deny it, I'm the one left trying to convince myself that it meant nothing.
+
+I'm tired of that cycle.
+
+Maybe you don't realize how much your actions affect me.
+Maybe you don't mean to confuse me.
+Maybe, to you, some things are just jokes, random moments, or things you do without thinking.
+
+But to me, they mean something.
+
+And I don't want to keep pretending that they don't.
+
+I don't want to beg you to care about me.
+I don't want to force you to feel something you don't feel.
+And I don't want to keep waiting for an answer that you've already given me in your own way.
+
+Maybe this is what letting go is supposed to feel like.
+
+Not suddenly forgetting someone.
+Not waking up one day and realizing that you don't care anymore.
+
+Maybe it's simply choosing to stop waiting.
+
+So if this is where I finally stop liking you, then I hope I have the strength to stay away from the things that make me fall for you again.
+
+I hope I stop looking for signs.
+I hope I stop giving meaning to every little thing you do.
+I hope I stop waiting for you to look for me.
+I hope I stop wondering if you miss me when I'm gone.
+
+Because I don't want to spend another month wondering where I stand.
+
+I liked you.
+I really did.
+
+And maybe a part of me will still like you for a while.
+
+But I don't want that part of me to keep hurting the rest of me.
+
+So this time, I'm choosing myself.
+
+Not because I suddenly stopped caring, but because I'm finally tired of caring about someone who makes me feel like caring is something I should be ashamed of.
+
+I don't regret liking you.
+
+I don't regret the moments when you made me happy.
+I don't regret the times when I felt special because of you.
+
+I just wish I didn't have to keep questioning whether those moments meant anything to you.
+
+Maybe someday, I'll look back at all of this and realize that letting you go was the right thing to do.
+
+And maybe someday, I'll finally understand why I had to meet someone who taught me that not every feeling is meant to become a relationship.
+
+For now, I just want peace.
+
+I want clarity.
+
+I want to stop wondering.
+
+I want to stop hoping.
+
+And most importantly, I want to stop hurting myself by staying somewhere I already know I don't belong.
+
+So if you really don't care, then I'll accept it.
+
+And if you do care, but not in the way I want you to, I'll accept that too.
+
+I just can't keep living in between those two possibilities.
+
+I want clarity, not charity for what you can only give.
+
+I want love, not a love bomb.
+
+And this time, I want to choose myself enough to finally let you go.`;
+const L2=`To the person who taught me something,
+
+I thought for a long time that I was losing something. Now I understand that I was learning something.
+
+I realized that I don't have to be someone's favorite to be worth choosing. I realized that being liked only in certain moments is not the same as being cared for. And I realized that waiting for someone to change isn't love. Sometimes it's just fear of letting go.
+
+I also realized that I was never too much. I just kept offering my heart to someone who wasn't ready to hold it.
+
+But I'm not bitter. I'm grateful.
+
+Thank you for the moments that made me smile, even if they didn't last.
+Thank you for showing me that I can like someone with my whole heart.
+Thank you for helping me see what I want, and what I will never settle for again.
+And thank you for being the reason I finally learned to choose myself.`;
+const MSG=["Some days, you made me feel like the only person in the room.","And some days, I was just a joke you never thought twice about.","I kept asking where I stand. I think I always knew the answer.","I stayed longer than I should have, hoping the sweet version of you would stay too.","I'm tired of waiting, so I'm learning how to stop."];
+
+/* ===== Scene 1: three.js tulip ===== */
+const rd=new THREE.WebGLRenderer({canvas:$('cv'),alpha:true,antialias:true});rd.setPixelRatio(Math.min(devicePixelRatio,2));
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(38,1,.1,100);
+sc.add(new THREE.HemisphereLight(0xffd6e8,0x2a1030,.9));
+const dl=new THREE.DirectionalLight(0xffe0ec,1.1);dl.position.set(2,4,5);sc.add(dl);
+const back=new THREE.PointLight(0xff7aa8,1.2,14);back.position.set(0,1,-2.5);sc.add(back);
+function resize(){const w=innerWidth,h=innerHeight;rd.setSize(w,h);cam.aspect=w/h;cam.position.set(0,.2,w/h<.8?17:12);cam.lookAt(0,-.1,0);cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+const SL=3.6,GB=-2.8,GY=-2.7;
+const vc=document.createElement('canvas');vc.width=128;vc.height=256;{const x=vc.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,128,256);for(let i=0;i<15;i++){x.strokeStyle=`rgba(190,70,120,${.1+Math.random()*.12})`;x.lineWidth=1+Math.random();x.beginPath();const px=6+i*8.7;x.moveTo(64+(px-64)*.3,256);x.quadraticCurveTo(px,128,64+(px-64)*.85,0);x.stroke()}}
+const veinT=new THREE.CanvasTexture(vc);
+function petalGeo(){const g=new THREE.PlaneGeometry(1,1,8,12),p=g.attributes.position,c=[];
+for(let i=0;i<p.count;i++){const s=p.getX(i)*2,v=p.getY(i)+.5,W=.9*Math.pow(Math.sin(Math.PI*(.28+.72*v)),.55);
+p.setXYZ(i,s*W*.5,v*1.5,.08+.32*Math.sin(Math.PI*Math.pow(v,.8))-.22*s*s*W-.5*Math.pow(v,4));
+const t=Math.min(1,Math.abs(s)*.6+v*v*.5),a=[1,.88,.92],b=[.9,.3,.52];c.push(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t)}
+g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.computeVertexNormals();return g}
+const PG=petalGeo();
+function leafG(sd){const g=new THREE.PlaneGeometry(1,1,3,14),p=g.attributes.position,c=[];
+for(let i=0;i<p.count;i++){const s=p.getX(i)*2,v=p.getY(i)+.5,w=.2*Math.sin(Math.PI*Math.pow(v,.7));
+p.setXYZ(i,s*w+sd*.7*v*v,v*2.3,-Math.abs(s)*w*.6);const m=Math.abs(s)<.12?1:.8;c.push(.3*m+.2*(m>.9),.5*m+.2*(m>.9),.27*m)}
+g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));g.computeVertexNormals();return g}
+const LG=[leafG(-1),leafG(1)],leafM=new THREE.MeshStandardMaterial({vertexColors:true,side:2,roughness:.9}),
+stemM=new THREE.MeshStandardMaterial({color:0x5d8a4a,roughness:.8,emissive:0x000000});
+function tulip(tint,open){const g=new THREE.Group(),pet=[],h=new THREE.Group();
+const cur=new THREE.CatmullRomCurve3([V3(0,0,0),V3(.12,1.2,.06),V3(-.08,2.5,0),V3(0,SL,0)]);
+g.add(new THREE.Mesh(new THREE.TubeGeometry(cur,24,.055,8),stemM));
+[-1,1].forEach((sd,i)=>{const l=new THREE.Mesh(LG[i],leafM);l.position.y=.05;l.rotation.y=sd*.7;g.add(l)});
+h.position.y=SL;
+for(let k=0;k<6;k++){const o=k<3,piv=new THREE.Group();piv.rotation.y=(k%3)*2.0944+(o?0:1.0472);
+const m=new THREE.Mesh(PG,new THREE.MeshStandardMaterial({vertexColors:true,map:veinT,side:2,roughness:.5,emissive:0x6a1838,emissiveIntensity:.25,transparent:true,color:new THREE.Color(tint[0]*(o?1:1.06),tint[1]*(o?1:1.06),tint[2]*(o?1:1.06))}));
+m.position.z=o?0:-.05;m.scale.setScalar(o?1:.9);m.userData={tilt:o?.28:.12,idx:k};m.rotation.x=open*m.userData.tilt;piv.add(m);h.add(piv);pet.push(m)}
+const pi=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,.5,8),new THREE.MeshStandardMaterial({color:0x9ab85a}));pi.position.y=.25;h.add(pi);g.add(h);g.position.y=GB;
+return{g,pet,h,setOpen:o=>pet.forEach(m=>m.rotation.x=o*m.userData.tilt)}}
+const hero=tulip([1,1,1],1);sc.add(hero.g);
+/* dust / pollen */
+const sp=document.createElement('canvas');sp.width=sp.height=32;{const x=sp.getContext('2d'),r=x.createRadialGradient(16,16,0,16,16,16);r.addColorStop(0,'#fff');r.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=r;x.fillRect(0,0,32,32)}
+const N=140,dp=new Float32Array(N*3),dv=[];for(let i=0;i<N;i++){dp.set([(Math.random()-.5)*10,(Math.random()-.5)*8,(Math.random()-.5)*5],i*3);dv.push(.1+Math.random()*.2)}
+const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+const dm=new THREE.PointsMaterial({size:.09,map:new THREE.CanvasTexture(sp),color:0xffc6dc,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending});sc.add(new THREE.Points(dg,dm));
+
+/* ===== Interaction: petals fall ===== */
+const ray=new THREE.Raycaster(),mo=new THREE.Vector2(),falls=[],FADE=new THREE.Color(.5,.4,.42);let tapped=0,live=true,msgTimer,tw;
+const msg=$('msg');
+function say(t){clearInterval(tw);msg.classList.remove('on');setTimeout(()=>{msg.textContent='';msg.classList.add('on');if(rm){msg.textContent=t;return}let i=0;tw=setInterval(()=>{msg.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(tw)},32)},rm?0:350)}
+function pick(e){const r=$('cv').getBoundingClientRect();mo.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mo,cam);const hit=ray.intersectObjects(hero.pet.filter(m=>m.parent&&m.parent!==sc));return hit.length?hit[0].object:null}
+$('cv').addEventListener('pointermove',e=>{if(!live)return;const h=pick(e);hero.pet.forEach(m=>m.material.emissiveIntensity=m===h?.8:.25);$('cv').style.cursor=h?'pointer':'default'});
+$('cv').addEventListener('pointerdown',e=>{if(!live)return;const m=pick(e);if(!m)return;
+const n=tapped++,last=n===5;$('hint').classList.remove('on');m.material.emissiveIntensity=.25;sc.attach(m);
+falls.push({m,t:0,ph:Math.random()*6,sp:last?.5:1,c0:m.material.color.clone(),cb:last?()=>setTimeout(()=>{live=false;msg.classList.remove('on');openL1()},1800):null});
+say(MSG[n]||'');if(last){live=false;setTimeout(()=>msg.classList.remove('on'),0)}});
+setTimeout(()=>$('hint').classList.add('on'),2500);
+
+/* ===== Full Letter (shared builder) ===== */
+function letter(txt,cls,btn,done,deco){
+const o=document.createElement('div');o.className='ov';const s=document.createElement('div');s.className='sheet '+cls;if(deco)s.innerHTML=deco;
+txt.trim().split('\n\n').forEach(p=>{const d=document.createElement('div');d.className='p';p.split('\n').forEach(l=>{const e=document.createElement('span');e.className='l';e.textContent=l;e.style.cssText=`transform:rotate(${((Math.random()-.5)*.8).toFixed(2)}deg) translateX(${(Math.random()*4).toFixed(1)}px);opacity:${(.84+Math.random()*.16).toFixed(2)};letter-spacing:${(Math.random()*.4).toFixed(2)}px`;d.appendChild(e)});s.appendChild(d)});
+const b=document.createElement('button');b.className='hw';b.textContent=btn;s.appendChild(b);o.appendChild(s);document.body.appendChild(o);
+const ps=[...s.querySelectorAll('.p')];
+const chk=()=>ps.forEach(p=>{if(!p.classList.contains('on')&&(rm||p.getBoundingClientRect().top<innerHeight*.92))p.classList.add('on')});
+chk();const iv=setInterval(()=>{if(!o.isConnected)return clearInterval(iv);chk()},250);o.addEventListener('scroll',chk);
+requestAnimationFrame(()=>o.classList.add('show'));
+b.onclick=()=>{o.classList.add('out');setTimeout(()=>{o.remove();done()},900)}}
+function openL1(){letter(L1,'','let it go',()=>setTimeout(rebirth,2000))}
+
+/* ===== Rebirth ===== */
+const TINTS=[[1,.97,.97],[1,.85,.9],[.97,.62,.78],[1,.9,.92],[.9,.5,.72],[1,.78,.85],[.95,.7,.82],[1,.92,.95],[.88,.45,.68],[1,.8,.88]];
+let rb=null,bq=[],wrap=null;const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
+function noiseTex(c1,fib){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle=c1;x.fillRect(0,0,128,128);for(let i=0;i<260;i++){x.strokeStyle=`rgba(${fib},${Math.random()*.2})`;x.beginPath();const a=Math.random()*128,b=Math.random()*128;x.moveTo(a,b);x.lineTo(a+Math.random()*14-7,b+Math.random()*14-7);x.stroke()}return new THREE.CanvasTexture(c)}
+function cone(rt,rb2,h,cy,mat,cr,ph){const g=new THREE.CylinderGeometry(rt,rb2,h,64,14,true),p=g.attributes.position;
+for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i),a=Math.atan2(z,x),k=1+cr*Math.sin(a*7+y*2.5+ph)+cr*.6*Math.sin(a*13-y*4);p.setXYZ(i,x*k,y,z*k)}
+g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.position.y=cy;return m}
+function buildWrap(){const w=new THREE.Group();w.position.y=GB;
+const kraft=new THREE.MeshStandardMaterial({map:noiseTex('#b98c5a','110,70,30'),side:2,roughness:.95,transparent:true,opacity:0}),
+tis=new THREE.MeshStandardMaterial({color:0xffb9d0,side:2,roughness:.9,transparent:true,opacity:0,depthWrite:false}),
+rib=new THREE.MeshStandardMaterial({color:0xd23a76,roughness:.25,metalness:.15,side:2,transparent:true,opacity:0});
+w.add(cone(1.3,.22,2.1,1.0,kraft,.035,0));w.add(cone(1.65,.3,2.4,1.25,tis,.07,1.3));
+const ring=new THREE.Mesh(new THREE.TorusGeometry(.72,.05,8,48),rib);ring.rotation.x=Math.PI/2;ring.position.y=.95;w.add(ring);
+[-1,1].forEach(s=>{const lp=new THREE.Mesh(new THREE.TorusGeometry(.2,.045,8,24),rib);lp.scale.set(1.3,1,.5);lp.position.set(s*.24,.95,.76);lp.rotation.z=s*.45;w.add(lp);
+const tg=new THREE.PlaneGeometry(.12,.85,1,8),pp=tg.attributes.position;for(let i=0;i<pp.count;i++)pp.setX(i,pp.getX(i)+Math.sin(pp.getY(i)*3)*.05);tg.computeVertexNormals();
+const t=new THREE.Mesh(tg,rib);t.position.set(s*.1,.5,.78);t.rotation.set(-.15,0,s*.18);w.add(t)});
+const kn=new THREE.Mesh(new THREE.SphereGeometry(.08,12,12),rib);kn.position.set(0,.95,.78);w.add(kn);
+w.userData.mats=[kraft,tis,rib];return w}
+function rebirth(){rb={t0:performance.now()/1000};$('bg2').style.opacity=0;
+TINTS.forEach((t,i)=>{const o=tulip(t,0);const a=(i-4.5)*.11;o.g.rotation.set((i%2?.2:-.15)+((i*13)%5-2)*.03,(i*2.1)%6,-a);o.g.userData.s=.78+.22*((i*7)%5)/4;o.g.userData.d=1.6+((i*37)%10)*.28;o.g.visible=false;sc.add(o.g);bq.push(o)})}
+function rebirthTick(t){stemM.emissive.setRGB(.5,.2,.3).multiplyScalar(ease(t/1.5));back.intensity=1.2+2*ease(t/1.5);
+if(t>1.6&&hero.g.parent){sc.remove(hero.g);stemM.emissive.setRGB(0,0,0);$('bg2').style.opacity=1}
+bq.forEach(o=>{const u=(t-o.g.userData.d)/3;o.g.visible=u>0;if(u>0){const g=ease(u),s=o.g.userData.s;o.g.scale.set(s,s*Math.max(.01,g),s);o.h.scale.setScalar(.3+.7*ease((u-.3)/.7));o.setOpen(ease((u-.55)/.45))}});
+if(t>6&&!wrap){wrap=buildWrap();sc.add(wrap)}
+if(wrap){const a=ease((t-6)/2.5);wrap.userData.mats.forEach(m=>m.opacity=m===wrap.userData.mats[1]?a*.55:a)}
+if(t>11&&!rb.env){rb.env=1;showEnv()}}
+
+/* ===== Envelope ===== */
+function showEnv(){const e=document.createElement('div');e.id='env';e.innerHTML='<div class="bk"></div><div class="pp"></div><div class="fr"></div><div class="fl"></div><div class="sl">🌷</div>';
+const h=document.createElement('div');h.id='eh';h.textContent='open it';document.body.append(e,h);
+requestAnimationFrame(()=>{e.classList.add('on');h.classList.add('on')});let used=0;
+e.onclick=()=>{if(used)return;used=1;h.classList.remove('on');if(navigator.vibrate)navigator.vibrate(20);e.classList.add('crack');
+setTimeout(()=>e.classList.add('open'),500);
+setTimeout(()=>letter(L2,'lav','close',()=>{e.style.opacity=0;setTimeout(()=>{e.remove();h.remove()},1500);finale()},'<i>🌷</i>'),2200)}}
+
+/* ===== Scene 4: tara na codm ===== */
+function finale(){const d=document.createElement('div');d.id='dim';
+d.innerHTML='<div class="card" id="cd"><div class="tara">tara na codm</div><div id="pn"></div><div class="bt"><button id="G">G</button><button id="P">Pass</button></div></div>';document.body.appendChild(d);
+requestAnimationFrame(()=>d.classList.add('on'));
+const PM=["bawal ganern.","tara na kasi.","isang game lang, promise.","sige na please.","wag ka na mahiya, tara na.","hindi pwede yan.","G na yan."],G=$('G'),P=$('P'),pn=$('pn'),cd=$('cd');let n=0,gs=1,ps=1,gone=0;
+P.onclick=e=>{e.stopPropagation();if(n>=7)return;pn.textContent=PM[n];pn.classList.remove('pop');void pn.offsetWidth;pn.classList.add('pop');n++;ps*=.77;gs*=1.28;
+cd.style.setProperty('--ps',ps);cd.style.setProperty('--gs',gs);G.classList.add('hot');P.classList.remove('wob');void P.offsetWidth;P.classList.add('wob');
+if(navigator.vibrate)navigator.vibrate(25);if(n>=7){P.style.pointerEvents='none';P.style.visibility='hidden'}};
+const go=()=>{if(gone)return;gone=1;d.classList.add('off');setTimeout(()=>{d.remove();ending()},800)};
+G.onclick=e=>{e.stopPropagation();go()};d.onclick=()=>{if(n>=7)go()}}
+function ending(){for(let i=0;i<55;i++){const s=document.createElement('span');s.className='pt'+(i%4==0?' s':'');s.style.cssText=`left:${Math.random()*100}vw;--d:${5+Math.random()*5}s;--dx:${(Math.random()-.5)*160}px;--r:${Math.random()*720-360}deg;animation-delay:${Math.random()*3}s`;document.body.appendChild(s)}
+const e=document.createElement('div');e.id='end';e.innerHTML='<div class="t">on ka na, inv mo me</div><button>replay</button>';document.body.appendChild(e);
+requestAnimationFrame(()=>e.classList.add('on'));const b=e.querySelector('button');setTimeout(()=>b.style.opacity=1,3200);b.onclick=()=>location.reload()}
+
+/* ===== Render loop ===== */
+let last=performance.now()/1000;
+function loop(){const T=performance.now()/1000,dt=Math.min(.05,T-last);last=T;
+if(!rm&&hero.g.parent){hero.g.rotation.z=Math.sin(T*.8)*.02;hero.h.rotation.z=Math.sin(T*.9+1)*.03;hero.h.rotation.x=Math.sin(T*.7)*.02}
+falls.forEach(f=>{f.t+=dt;const m=f.m;
+if(!f.land){m.position.y-=dt*f.sp*(.9+.4*Math.sin(f.t*2.1+f.ph));m.position.x+=Math.sin(f.t*1.6+f.ph)*dt*.9*f.sp;m.position.z+=Math.cos(f.t*1.2+f.ph)*dt*.3*f.sp;
+m.rotation.x+=dt*(.9+Math.sin(f.t*1.3))*f.sp;m.rotation.y+=dt*1.1*f.sp;m.rotation.z+=dt*1.4*Math.sin(f.t*1.9+f.ph)*f.sp;
+if(m.position.y<=GY){f.land=1;f.lt=0;m.position.y=GY;f.q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-1.45,Math.random()*6.28,0))}}
+else{f.lt+=dt;m.quaternion.slerp(f.q,Math.min(1,dt*2.5));const a=Math.min(1,f.lt/5);m.material.color.copy(f.c0).lerp(FADE,a);m.material.opacity=1-.35*a;if(f.cb&&f.lt>.9){const c=f.cb;f.cb=null;c()}}});
+if(rb)rebirthTick(T-rb.t0);
+const p=dg.attributes.position;for(let i=0;i<N;i++){let y=p.getY(i)+(rb?-dv[i]*.5:dv[i]*.3)*dt;if(y>4)y=-4;if(y<-4)y=4;p.setY(i,y);p.setX(i,p.getX(i)+Math.sin(T+i)*dt*.1)}p.needsUpdate=true;
+if(rb)dm.color.setHex(0xffe0a0);
+rd.render(sc,cam);requestAnimationFrame(loop)}
+loop();
+</script></body></html>
